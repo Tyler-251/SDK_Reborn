@@ -40,10 +40,5 @@ fn setup (
         Velocity::default(),
         GravityScale(100.0),
     ));
-    commands.spawn(
-        SpriteBundle {
-            
-        }
-    )
     commands.spawn(Camera2dBundle::default());
 }
