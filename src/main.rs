@@ -1,3 +1,4 @@
+use bevy::math::vec2;
 use bevy::prelude::*;
 use bevy::render::texture::ImagePlugin;
 use bevy_rapier2d::prelude::*;
@@ -8,6 +9,8 @@ use flex_load::*;
 fn main() {
     let mut asset_plugin = AssetLoadPlugin::new();
     asset_plugin.add_asset::<Image>("squid", "squid/squiddy-1.png");
+
+    asset_plugin.add_asset::<Image>("knife", "knife/knife.png");
 
     let mut app = App::new();
     app.add_plugins((DefaultPlugins.set(ImagePlugin::default_nearest()), asset_plugin));
@@ -24,10 +27,20 @@ fn setup (
         SpriteBundle {
             texture: loaded.get_typed::<Image>("squid").unwrap(),
             sprite: Sprite {
-                custom_size: Some(Vec2::new(100.0, 100.0)),
+                custom_size: Some(Vec2::new(64.0, 64.0)),
                 ..Default::default()
             },
             
+            ..Default::default()
+        }
+    );
+    commands.spawn(
+        SpriteBundle {
+            texture: loaded.get_typed::<Image>("knife").unwrap(),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(62.0,32.0)),
+                ..Default::default()
+            },
             ..Default::default()
         }
     );
