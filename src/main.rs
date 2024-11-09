@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::render::texture::ImagePlugin;
+use bevy_rapier2d::prelude::*;
 
 pub mod flex_load;
 use flex_load::*;
