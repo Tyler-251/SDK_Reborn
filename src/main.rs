@@ -13,7 +13,12 @@ fn main() {
     asset_plugin.add_asset::<Image>("knife", "knife/knife.png");
 
     let mut app = App::new();
-    app.add_plugins((DefaultPlugins.set(ImagePlugin::default_nearest()), asset_plugin));
+    app.add_plugins((
+        DefaultPlugins.set(ImagePlugin::default_nearest()), 
+        asset_plugin, 
+        RapierPhysicsPlugin::<NoUserData>::default(), 
+        RapierDebugRenderPlugin::default(),
+    ));
     app.add_systems(OnEnter(AssetLoadState::Ready), setup);
     app.run();
 
@@ -23,7 +28,7 @@ fn setup (
     mut commands: Commands,
     loaded: Res<LoadedAssets>,
 ) {
-    commands.spawn(
+    commands.spawn((
         SpriteBundle {
             texture: loaded.get_typed::<Image>("squid").unwrap(),
             sprite: Sprite {
@@ -32,8 +37,12 @@ fn setup (
             },
             
             ..Default::default()
-        }
-    );
+        },
+        RigidBody::Dynamic,
+        Collider::ball(30.0),
+        Velocity::default(),
+        GravityScale(100.0),
+    ));
     commands.spawn(
         SpriteBundle {
             texture: loaded.get_typed::<Image>("knife").unwrap(),
