@@ -10,7 +10,12 @@ fn main() {
     asset_plugin.add_asset::<Image>("squid", "squid/squiddy-1.png");
 
     let mut app = App::new();
-    app.add_plugins((DefaultPlugins.set(ImagePlugin::default_nearest()), asset_plugin));
+    app.add_plugins((
+        DefaultPlugins.set(ImagePlugin::default_nearest()), 
+        asset_plugin, 
+        RapierPhysicsPlugin::<NoUserData>::default(), 
+        RapierDebugRenderPlugin::default(),
+    ));
     app.add_systems(OnEnter(AssetLoadState::Ready), setup);
     app.run();
 
@@ -20,16 +25,25 @@ fn setup (
     mut commands: Commands,
     loaded: Res<LoadedAssets>,
 ) {
-    commands.spawn(
+    commands.spawn((
         SpriteBundle {
             texture: loaded.get_typed::<Image>("squid").unwrap(),
             sprite: Sprite {
-                custom_size: Some(Vec2::new(100.0, 100.0)),
+                custom_size: Some(Vec2::new(64.0, 64.0)),
                 ..Default::default()
             },
             
             ..Default::default()
+        },
+        RigidBody::Dynamic,
+        Collider::ball(30.0),
+        Velocity::default(),
+        GravityScale(100.0),
+    ));
+    commands.spawn(
+        SpriteBundle {
+            
         }
-    );
+    )
     commands.spawn(Camera2dBundle::default());
 }
