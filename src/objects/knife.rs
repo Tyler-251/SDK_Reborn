@@ -140,13 +140,13 @@ pub fn spawn_knife_holder (
             },
         ));
         //back knives
-        spawn_knife(parent, loaded.get_typed("knife").unwrap(), Vec3::new(-18.0, 10.0, 0.1), 4);
-        spawn_knife(parent, loaded.get_typed("knife").unwrap(), Vec3::new(-18.0, -10.0, 0.1), 3);
+        spawn_knife(parent, loaded.get_typed("knife").unwrap(), Vec3::new(-18.0, 10.0, 0.1), 0);
+        spawn_knife(parent, loaded.get_typed("knife").unwrap(), Vec3::new(-18.0, -10.0, 0.1), 4);
 
         //front knives
-        spawn_knife(parent, loaded.get_typed("knife").unwrap(), Vec3::new(-10.0, 13.0, 0.3), 2);
-        spawn_knife(parent, loaded.get_typed("knife").unwrap(), Vec3::new(-10.0, -1.0, 0.3), 1);
-        spawn_knife(parent, loaded.get_typed("knife").unwrap(), Vec3::new(-10.0, -13.0, 0.3), 0);
+        spawn_knife(parent, loaded.get_typed("knife").unwrap(), Vec3::new(-10.0, 13.0, 0.3), 3);
+        spawn_knife(parent, loaded.get_typed("knife").unwrap(), Vec3::new(-10.0, -1.0, 0.3), 2);
+        spawn_knife(parent, loaded.get_typed("knife").unwrap(), Vec3::new(-10.0, -13.0, 0.3), 1);
 
         if knife_holder.debug {
             parent.spawn((

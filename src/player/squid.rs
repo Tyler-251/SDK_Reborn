@@ -1,14 +1,13 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use crate::{flex_load::*, PLAYER_Z};
-use super::ui::PlayerUIPlugin;
-use super::input_track::*;
+use crate::player::*;
 
 pub struct SquidPlugin;
 
 impl Plugin for SquidPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(PlayerUIPlugin);
+        app.add_plugins((PlayerUIPlugin, CameraTrackingPlugin));
         app.insert_resource(InputStack::new());
         app.add_systems(OnEnter(AssetLoadState::Ready), spawn_squid);
         app.add_systems(Update, (control_squid, track_input).run_if(in_state(AssetLoadState::Ready)));
