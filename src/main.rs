@@ -5,10 +5,7 @@ use bevy_rapier2d::prelude::*;
 pub mod flex_load;
 use flex_load::*;
 
-pub mod player {
-    pub mod squid;
-    pub mod ui;
-}
+pub mod player;
 use player::squid::*;
 
 pub mod objects {
@@ -40,7 +37,7 @@ fn main() {
         DefaultPlugins.set(ImagePlugin::default_nearest()), 
         asset_plugin, 
         RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(64.0), 
-        RapierDebugRenderPlugin::default(),
+        // RapierDebugRenderPlugin::default(),
         SquidPlugin,
         KnifePlugin,
         BackgroundPlugin,
