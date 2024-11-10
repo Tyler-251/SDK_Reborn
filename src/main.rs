@@ -1,10 +1,14 @@
-use bevy::math::vec2;
 use bevy::prelude::*;
 use bevy::render::texture::ImagePlugin;
 use bevy_rapier2d::prelude::*;
 
 pub mod flex_load;
 use flex_load::*;
+
+pub mod player {
+    pub mod squid;
+}
+use player::squid::*;
 
 fn main() {
     let mut asset_plugin = AssetLoadPlugin::new();
@@ -16,8 +20,9 @@ fn main() {
     app.add_plugins((
         DefaultPlugins.set(ImagePlugin::default_nearest()), 
         asset_plugin, 
-        RapierPhysicsPlugin::<NoUserData>::default(), 
+        RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(64.0), 
         RapierDebugRenderPlugin::default(),
+        SquidPlugin,
     ));
     app.add_systems(OnEnter(AssetLoadState::Ready), setup);
     app.run();
@@ -28,21 +33,7 @@ fn setup (
     mut commands: Commands,
     loaded: Res<LoadedAssets>,
 ) {
-    commands.spawn((
-        SpriteBundle {
-            texture: loaded.get_typed::<Image>("squid").unwrap(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(64.0, 64.0)),
-                ..Default::default()
-            },
-            
-            ..Default::default()
-        },
-        RigidBody::Dynamic,
-        Collider::cuboid(25.0, 26.0),
-        Velocity::default(),
-        GravityScale(1.0),
-    ));
+    
     commands.spawn(
         SpriteBundle {
             texture: loaded.get_typed::<Image>("knife").unwrap(),
@@ -65,7 +56,11 @@ fn setup (
         },
         RigidBody::Fixed,
         Collider::cuboid(128.0, 32.0),
+        Friction {
+            coefficient: 0.0,
+            ..Default::default()
+        }
     ));
-    commands.spawn(Camera2dBundle::default());
+    
 }
 
