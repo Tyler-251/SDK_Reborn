@@ -12,7 +12,8 @@ use player::squid::*;
 
 fn main() {
     let mut asset_plugin = AssetLoadPlugin::new();
-    asset_plugin.add_asset::<Image>("squid", "squid/squiddy-1.png");
+    asset_plugin.add_asset::<Image>("squid", "squid/squiddy_flat.png");
+    asset_plugin.add_asset::<Image>("arrow", "squid/squid_arrow_0.png");
     asset_plugin.add_asset::<Image>("knife", "knife/knife.png");
     asset_plugin.add_asset::<Image>("sand", "platforms/sand.png");
 

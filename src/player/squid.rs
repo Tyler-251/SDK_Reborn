@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
+use bevy_rapier2d::{prelude::*, rapier};
 use crate::flex_load::*;
 
 pub struct SquidPlugin;
@@ -43,23 +43,39 @@ fn spawn_squid (
 }
 
 fn control_squid (
-    mut player_query: Query<&mut Velocity, With<Player>>,
+    mut player_query: Query<(&mut Velocity, &mut GravityScale, &mut Sprite), With<Player>>,
     input: Res<ButtonInput<KeyCode>>,
 ) {
     if player_query.iter().count() == 0 {return}
-    let mut velocity = player_query.single_mut();
+    let (mut velocity, mut gravity, mut sprite) = player_query.single_mut();
     let speed = 170.0;
 
     let mut movement_vector: Vec2 = Vec2::ZERO;
     if input.pressed(KeyCode::KeyA) {
         movement_vector.x -= 1.0;
+        sprite.flip_x = true;
     }
     if input.pressed(KeyCode::KeyD) {
         movement_vector.x += 1.0;
+        sprite.flip_x = false;
     }
-    if movement_vector != Vec2::ZERO {velocity.linvel = Vec2::new(movement_vector.x * speed, velocity.linvel.y)}
+
+    if movement_vector != Vec2::ZERO {
+        velocity.linvel = Vec2::new(movement_vector.x * speed, velocity.linvel.y)
+    } else {
+        velocity.linvel = Vec2::new(velocity.linvel.x.clamp(-100., 100.), velocity.linvel.y)
+    }
 
     if input.just_pressed(KeyCode::Space) {
         velocity.linvel.y = 300.0;
     }
+
+    if input.pressed(KeyCode::Space) && velocity.linvel.y > 0.0 {
+        gravity.0 = 0.7;
+    } else if input.pressed(KeyCode::KeyS) {
+        gravity.0 = 2.0;
+    } else {
+        gravity.0 = 1.5;
+    } 
+
 }
