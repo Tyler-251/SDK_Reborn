@@ -44,8 +44,25 @@ fn main() {
         KnifePlugin,
         BackgroundPlugin,
     ));
+    app.add_systems(OnEnter(AssetLoadState::Ready), make_platform);
     app.run();
 }
 
-
-
+fn make_platform (
+    mut commands: Commands,
+    loaded: Res<LoadedAssets>,
+) {
+    commands.spawn((
+        SpriteBundle {
+            texture: loaded.get_typed::<Image>("sand").unwrap(),
+            transform: Transform::from_translation(Vec3::new(0.0, -200.0, PLATFORM_Z)),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(256.0, 64.0)),
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+        RigidBody::Fixed,
+        Collider::cuboid(128., 32.)
+    ));
+}

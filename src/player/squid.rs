@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use crate::flex_load::*;
+use crate::{flex_load::*, PLAYER_Z};
 use super::ui::PlayerUIPlugin;
 
 pub struct SquidPlugin;
@@ -55,6 +55,7 @@ fn spawn_squid (
     commands.spawn((
         SpriteBundle {
             texture: loaded.get_typed::<Image>("squid").unwrap(),
+            transform: Transform::from_translation(Vec3::new(0.0, 0.0, PLAYER_Z)),
             sprite: Sprite {
                 custom_size: Some(Vec2::new(64.0, 64.0)),
                 ..Default::default()
