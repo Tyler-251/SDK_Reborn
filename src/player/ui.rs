@@ -19,7 +19,6 @@ struct InputStackText;
 
 fn setup (
     mut commands: Commands,
-    loaded: Res<LoadedAssets>,
 ) {
     commands.spawn((
         TextBundle::from_section("Health: X/X", 

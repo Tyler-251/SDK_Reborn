@@ -23,9 +23,9 @@ fn spawn_background (
             commands.spawn((
                 SpriteBundle {
                     texture: loaded.get_typed::<Image>("walls").unwrap(),
-                    transform: Transform::from_translation(Vec3::new(x as f32 * 128.0, y as f32 * 128.0, BACKGROUND_Z)),
+                    transform: Transform::from_translation(Vec3::new(x as f32 * 64.0, y as f32 * 64.0, BACKGROUND_Z)),
                     sprite: Sprite {
-                        custom_size: Some(Vec2::splat(128.)),
+                        custom_size: Some(Vec2::splat(64.)),
                         ..Default::default()
                     },
                     ..Default::default()

@@ -71,6 +71,15 @@ impl LoadedAssets {
     pub fn get_typed<T: Asset>(&self, name: &str) -> Option<Handle<T>> {
         return self.get_untyped(name).map(|handle| handle.typed::<T>());
     }
+
+    pub fn get_untyped_clone(&self, name: &str) -> Option<UntypedHandle> {
+        return self.get_untyped(name).map(|handle| handle.clone());
+    }
+    
+    pub fn get_typed_clone<T: Asset>(&self, name: &str) -> Option<Handle<T>> {
+        return self.get_typed(name).map(|handle| handle.clone());
+    }
+
 }
 
 #[derive(States, Hash, Eq, PartialEq, Clone, Debug, Default)]

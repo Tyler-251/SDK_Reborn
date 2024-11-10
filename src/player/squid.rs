@@ -51,17 +51,34 @@ impl Health {
 fn spawn_squid (
     mut commands: Commands,
     loaded: Res<LoadedAssets>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
+    // Squid layout:
+    // 0: full sprite 0
+    // 1: full sprite 1
+    // 2: legs sprite 0
+    // 3: legs sprite 1
+    // 4: head sprite 0
+    // 5: head sprite 1
+    // 6: head sprite 2
+    // 7: head sprite 3
+    let squid_map_layout = texture_atlas_layouts.add(
+        TextureAtlasLayout::from_grid(UVec2::splat(32), 3, 3, None, None)
+    );
+    
     commands.spawn((
         SpriteBundle {
-            texture: loaded.get_typed::<Image>("squid").unwrap(),
+            texture: loaded.get_typed::<Image>("squid_map").unwrap(),
             transform: Transform::from_translation(Vec3::new(0.0, 0.0, PLAYER_Z)),
             sprite: Sprite {
                 custom_size: Some(Vec2::new(64.0, 64.0)),
                 ..Default::default()
             },
-            
             ..Default::default()
+        },
+        TextureAtlas {
+            layout: squid_map_layout.clone(),
+            index: 4,
         },
         RigidBody::Dynamic,
         Collider::cuboid(25.0, 26.0),
@@ -73,32 +90,62 @@ fn spawn_squid (
         },
         LockedAxes::ROTATION_LOCKED,
         Player
-    ));
+    )).with_children(|parent| {
+        parent.spawn((
+            SpriteBundle {
+                texture: loaded.get_typed_clone::<Image>("squid_map").unwrap(),
+                transform: Transform::from_translation(Vec3::new(0.0, 0.0, -0.1)), //just behind squid head
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(64.0, 64.0)),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            TextureAtlas {
+                layout: squid_map_layout.clone(),
+                index: 2,
+            },
+        ));
+    });
     commands.spawn(Camera2dBundle::default());
 }
 
 fn control_squid (
-    mut player_query: Query<(&mut Velocity, &mut GravityScale, &mut Sprite), With<Player>>,
+    mut player_query: Query<(&mut Velocity, &mut GravityScale, &mut Sprite, &mut Children), With<Player>>,
+    mut sprites_query: Query<&mut Sprite, Without<Player>>,
     input: Res<ButtonInput<KeyCode>>,
+    time: Res<Time>
 ) {
     if player_query.iter().count() == 0 {return}
-    let (mut velocity, mut gravity, mut sprite) = player_query.single_mut();
+    let (mut velocity, mut gravity, mut sprite, player_children) = player_query.single_mut();
+    let children = player_children.iter().collect::<Vec<&Entity>>();
     let speed = 170.0;
 
     let mut movement_vector: Vec2 = Vec2::ZERO;
     if input.pressed(KeyCode::KeyA) {
         movement_vector.x -= 1.0;
         sprite.flip_x = true;
+        children.iter().for_each(|child| {
+            if let Ok(mut child_sprite) = sprites_query.get_mut(**child) {
+                child_sprite.flip_x = true;
+            }
+        });
+        
     }
     if input.pressed(KeyCode::KeyD) {
         movement_vector.x += 1.0;
         sprite.flip_x = false;
+        children.iter().for_each(|child| {
+            if let Ok(mut child_sprite) = sprites_query.get_mut(**child) {
+                child_sprite.flip_x = false;
+            }
+        });
     }
 
     if movement_vector != Vec2::ZERO {
-        velocity.linvel = Vec2::new(movement_vector.x * speed, velocity.linvel.y)
+        velocity.linvel.x = movement_vector.x * speed;
     } else {
-        velocity.linvel = Vec2::new(velocity.linvel.x.clamp(-100., 100.), velocity.linvel.y)
+        velocity.linvel.x = velocity.linvel.x * 0.1_f32.powf(time.delta_seconds());
     }
 
     if input.just_pressed(KeyCode::Space) {
