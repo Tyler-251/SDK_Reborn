@@ -75,7 +75,7 @@ fn make_platform (
             },
             ..Default::default()
         },
-        Collider::cuboid(31., 14.),
+        Collider::cuboid(31., 10.),
         Sensor,
     ));
 }
