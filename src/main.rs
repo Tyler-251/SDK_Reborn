@@ -25,6 +25,7 @@ static PLAYER_Z: f32 = 10.0;
 fn main() {
     let mut asset_plugin = AssetLoadPlugin::new();
     asset_plugin.add_asset::<Image>("squid", "squid/squiddy_flat.png");
+    asset_plugin.add_asset::<Image>("squid_map", "squid/squid_map.png");
     asset_plugin.add_asset::<Image>("arrow", "squid/squid_arrow_0.png");
     asset_plugin.add_asset::<Image>("knife", "knife/knife.png");
     asset_plugin.add_asset::<Image>("sand", "platforms/sand.png");
@@ -39,7 +40,7 @@ fn main() {
         DefaultPlugins.set(ImagePlugin::default_nearest()), 
         asset_plugin, 
         RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(64.0), 
-        // RapierDebugRenderPlugin::default(),
+        RapierDebugRenderPlugin::default(),
         SquidPlugin,
         BackgroundPlugin,
     ));
@@ -63,5 +64,18 @@ fn make_platform (
         },
         RigidBody::Fixed,
         Collider::cuboid(128., 32.)
+    ));
+    commands.spawn((
+        SpriteBundle {
+            texture: loaded.get_typed::<Image>("knife").unwrap(),
+            transform: Transform::from_translation(Vec3::new(300.0, -100., 0.0)),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(62.0, 32.0)),
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+        Collider::cuboid(31., 14.),
+        Sensor,
     ));
 }
