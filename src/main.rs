@@ -9,13 +9,20 @@ pub mod player {
     pub mod squid;
 }
 use player::squid::*;
-
+pub mod objects {
+    pub mod knife;
+}
+use objects::knife::*;
 fn main() {
     let mut asset_plugin = AssetLoadPlugin::new();
     asset_plugin.add_asset::<Image>("squid", "squid/squiddy_flat.png");
     asset_plugin.add_asset::<Image>("arrow", "squid/squid_arrow_0.png");
     asset_plugin.add_asset::<Image>("knife", "knife/knife.png");
     asset_plugin.add_asset::<Image>("sand", "platforms/sand.png");
+    asset_plugin.add_asset::<Image>("knife_holder_base", "knife/knife_holder/knife_holder_base.png");
+    asset_plugin.add_asset::<Image>("knife_holder_mask_0", "knife/knife_holder/knife_holder_mask_0.png");
+    asset_plugin.add_asset::<Image>("knife_holder_mask_1", "knife/knife_holder/knife_holder_mask_1.png");
+
 
     let mut app = App::new();
     app.add_plugins((
@@ -24,6 +31,7 @@ fn main() {
         RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(64.0), 
         RapierDebugRenderPlugin::default(),
         SquidPlugin,
+        KnifePlugin,
     ));
     app.add_systems(OnEnter(AssetLoadState::Ready), setup);
     app.run();
@@ -62,6 +70,6 @@ fn setup (
             ..Default::default()
         }
     ));
-    
+
 }
 
