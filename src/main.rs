@@ -41,44 +41,11 @@ fn main() {
         RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(64.0), 
         // RapierDebugRenderPlugin::default(),
         SquidPlugin,
+        KnifePlugin,
         BackgroundPlugin,
     ));
-    app.add_systems(OnEnter(AssetLoadState::Ready), setup);
     app.run();
 }
 
-fn setup (
-    mut commands: Commands,
-    loaded: Res<LoadedAssets>,
-) {
-    
-    commands.spawn(
-        SpriteBundle {
-            texture: loaded.get_typed::<Image>("knife").unwrap(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(62.0,32.0)),
-                ..Default::default()
-            },
-            ..Default::default()
-        }
-    );
-    commands.spawn((
-        SpriteBundle {
-            texture: loaded.get_typed::<Image>("sand").unwrap(),
-            transform: Transform::from_translation(Vec3::new(0.0, -250.0, 0.0)),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(256.0, 64.0)),
-                ..Default::default()
-            },
-            ..Default::default()
-        },
-        RigidBody::Fixed,
-        Collider::cuboid(128.0, 32.0),
-        Friction {
-            coefficient: 0.0,
-            ..Default::default()
-        }
-    ));
 
-}
 

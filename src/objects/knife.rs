@@ -18,6 +18,7 @@ fn spawn_knife (
     commands.spawn( (
         SpriteBundle {
             texture: loaded.get_typed::<Image>("knife_holder_base").unwrap(),
+            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
             sprite: Sprite {
                 custom_size: Some(Vec2::new(64.0,64.0)),
                 ..Default::default()
@@ -25,4 +26,28 @@ fn spawn_knife (
             ..Default::default()
         },
     ));
+
+    commands.spawn( (
+        SpriteBundle {
+            texture: loaded.get_typed::<Image>("knife").unwrap(),
+            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.1)),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(62.0,32.0)),
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+    ));
+
+    commands.spawn( (
+        SpriteBundle {
+            texture: loaded.get_typed::<Image>("knife_holder_mask_0").unwrap(),
+            transform: Transform::from_translation(Vec3::new(0.0,0.0,0.2)),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(64.0, 64.0)),
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+    )); 
 }
