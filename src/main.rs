@@ -7,6 +7,7 @@ use flex_load::*;
 
 pub mod player {
     pub mod squid;
+    pub mod ui;
 }
 use player::squid::*;
 
@@ -16,6 +17,7 @@ fn main() {
     asset_plugin.add_asset::<Image>("arrow", "squid/squid_arrow_0.png");
     asset_plugin.add_asset::<Image>("knife", "knife/knife.png");
     asset_plugin.add_asset::<Image>("sand", "platforms/sand.png");
+    asset_plugin.add_asset::<Image>("walls", "platforms/walls.png");
 
     let mut app = App::new();
     app.add_plugins((
@@ -27,7 +29,6 @@ fn main() {
     ));
     app.add_systems(OnEnter(AssetLoadState::Ready), setup);
     app.run();
-
 }
 
 fn setup (
