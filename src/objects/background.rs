@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::flex_load::*;
+use crate::{flex_load::*, BACKGROUND_Z};
 
 pub struct BackgroundPlugin;
 
@@ -23,16 +23,16 @@ fn spawn_background (
             commands.spawn((
                 SpriteBundle {
                     texture: loaded.get_typed::<Image>("walls").unwrap(),
-                    transform: Transform::from_translation(Vec3::new(x as f32 * 64.0, y as f32 * 64.0, -10.0)),
+                    transform: Transform::from_translation(Vec3::new(x as f32 * 128.0, y as f32 * 128.0, BACKGROUND_Z)),
                     sprite: Sprite {
-                        custom_size: Some(Vec2::new(64.0, 64.0)),
+                        custom_size: Some(Vec2::splat(128.)),
                         ..Default::default()
                     },
                     ..Default::default()
                 },
                 TextureAtlas {
                     layout: wall_atlas_layout.clone(),
-                    index: 5,
+                    index: 1,
                 }
             ));
         }
