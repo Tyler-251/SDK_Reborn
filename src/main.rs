@@ -8,12 +8,15 @@ use flex_load::*;
 pub mod player;
 use player::squid::*;
 
-pub mod objects {
-    pub mod knife;
-    pub mod background;
-}
+pub mod objects;
 use objects::knife::*;
-use objects::background::*;
+
+pub mod scenes;
+use rat::RatPlugin;
+use scenes::background::*;
+
+pub mod enemies;
+use enemies::rat::*;
 
 static BACKGROUND_Z: f32 = -100.0;
 static PLATFORM_Z: f32 = -50.0;
@@ -22,9 +25,12 @@ static PLAYER_Z: f32 = 10.0;
 fn main() {
     let mut asset_plugin = AssetLoadPlugin::new();
     asset_plugin.add_asset::<Image>("squid", "squid/squiddy_flat.png");
-    asset_plugin.add_asset::<Image>("squid_map", "squid/squid_map.png");
+    asset_plugin.add_asset::<Image>("squid_map", "squid/squid_map2.png");
+    asset_plugin.add_asset::<Image>("rat_map", "rat/rat_map.png");
     asset_plugin.add_asset::<Image>("arrow", "squid/squid_arrow_0.png");
     asset_plugin.add_asset::<Image>("knife", "knife/knife.png");
+    asset_plugin.add_asset::<Image>("small_knife", "knife/smallknife.png");
+
     asset_plugin.add_asset::<Image>("sand", "platforms/sand.png");
     asset_plugin.add_asset::<Image>("walls", "walls/walls.png");
     asset_plugin.add_asset::<Image>("knife_holder_base", "knife/knife_holder/knife_holder_base.png");
@@ -37,10 +43,11 @@ fn main() {
         DefaultPlugins.set(ImagePlugin::default_nearest()), 
         asset_plugin, 
         RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(64.0), 
-        RapierDebugRenderPlugin::default(),
+        // RapierDebugRenderPlugin::default(),
         SquidPlugin,
         KnifePlugin,
         BackgroundPlugin,
+        RatPlugin
     ));
     app.add_systems(OnEnter(AssetLoadState::Ready), make_platform);
     app.run();
@@ -62,18 +69,5 @@ fn make_platform (
         },
         RigidBody::Fixed,
         Collider::cuboid(128., 32.)
-    ));
-    commands.spawn((
-        SpriteBundle {
-            texture: loaded.get_typed::<Image>("knife").unwrap(),
-            transform: Transform::from_translation(Vec3::new(300.0, -100., 0.0)),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(62.0, 32.0)),
-                ..Default::default()
-            },
-            ..Default::default()
-        },
-        Collider::cuboid(31., 10.),
-        Sensor,
     ));
 }

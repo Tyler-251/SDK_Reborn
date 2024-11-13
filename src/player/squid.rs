@@ -7,7 +7,7 @@ pub struct SquidPlugin;
 
 impl Plugin for SquidPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((PlayerUIPlugin, CameraTrackingPlugin, BaseMovementPlugin));
+        app.add_plugins((PlayerUIPlugin, CameraTrackingPlugin, BaseMovementPlugin, PlayerAnimationPlugin));
         app.insert_resource(InputStack::new());
         app.add_systems(OnEnter(AssetLoadState::Ready), spawn_squid);
         app.add_systems(Update, track_input.run_if(in_state(AssetLoadState::Ready)));
@@ -63,7 +63,7 @@ fn spawn_squid (
     // 6: head sprite 2
     // 7: head sprite 3
     let squid_map_layout = texture_atlas_layouts.add(
-        TextureAtlasLayout::from_grid(UVec2::splat(32), 3, 3, None, None)
+        TextureAtlasLayout::from_grid(UVec2::splat(32), 3, 4, None, None)
     );
     
     commands.spawn((
@@ -80,6 +80,7 @@ fn spawn_squid (
             layout: squid_map_layout.clone(),
             index: 4,
         },
+        PlayerAnimation::default(),
         RigidBody::Dynamic,
         Collider::capsule_y(3., 20.),
         ActiveEvents::COLLISION_EVENTS,

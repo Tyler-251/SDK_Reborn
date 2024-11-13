@@ -12,7 +12,7 @@ impl Plugin for KnifePlugin {
 }
 
 pub fn init_test (
-    mut commands: Commands,
+    commands: Commands,
     loaded: Res<LoadedAssets>,
 ) {
     spawn_knife_holder(commands, loaded, Vec2::X * 200.,Quat::from_rotation_z(3.14 / 2.), KnifeHolder::new(2.0));
@@ -62,8 +62,7 @@ fn tick_knife_holders (
     loaded: Res<LoadedAssets>,
     time: Res<Time>,
     mut query: Query<(&mut KnifeHolder, &Children, Entity)>,
-    mut knife_query: Query<(&mut Velocity, &mut Knife, &Transform, &GlobalTransform, Entity), Without<Player>>,
-    player_query: Query<(&Transform, &Player, &Collider), Without<Knife>>,
+    mut knife_query: Query<(&mut Velocity, &mut KnifeHolderKnife, &Transform, &GlobalTransform, Entity), Without<Player>>,
     mut text_query: Query<&mut Text, With<KnifeDebugText>>,
 ) {
     // knife holder behavior
@@ -78,7 +77,7 @@ fn tick_knife_holders (
                         knife_struct.state = KnifeState::Shooting;
                         let old_position = knife_transform.translation;
                         commands.entity(entity).with_children(|parent| {
-                            spawn_creeping_knife(parent, loaded.get_typed("knife").unwrap(), old_position, knife_struct.index);
+                            spawn_creeping_knife(parent, loaded.get_typed("small_knife").unwrap(), old_position, knife_struct.index);
                         });
                     }
                 }
@@ -164,13 +163,13 @@ pub fn spawn_knife_holder (
             },
         ));
         //back knives
-        spawn_ready_knife(parent, loaded.get_typed("knife").unwrap(), Vec3::new(-18.0, 10.0, 0.1), 0);
-        spawn_ready_knife(parent, loaded.get_typed("knife").unwrap(), Vec3::new(-18.0, -10.0, 0.1), 4);
+        spawn_ready_knife(parent, loaded.get_typed("small_knife").unwrap(), Vec3::new(-25.0, 10.0, 0.1), 0);
+        spawn_ready_knife(parent, loaded.get_typed("small_knife").unwrap(), Vec3::new(-25.0, -10.0, 0.1), 4);
 
         //front knives
-        spawn_ready_knife(parent, loaded.get_typed("knife").unwrap(), Vec3::new(-10.0, 13.0, 0.3), 3);
-        spawn_ready_knife(parent, loaded.get_typed("knife").unwrap(), Vec3::new(-10.0, -1.0, 0.3), 2);
-        spawn_ready_knife(parent, loaded.get_typed("knife").unwrap(), Vec3::new(-10.0, -13.0, 0.3), 1);
+        spawn_ready_knife(parent, loaded.get_typed("small_knife").unwrap(), Vec3::new(-17.0, 13.0, 0.3), 3);
+        spawn_ready_knife(parent, loaded.get_typed("small_knife").unwrap(), Vec3::new(-17.0, -1.0, 0.3), 2);
+        spawn_ready_knife(parent, loaded.get_typed("small_knife").unwrap(), Vec3::new(-17.0, -13.0, 0.3), 1);
 
         if knife_holder.debug {
             parent.spawn((
@@ -196,7 +195,7 @@ pub enum KnifeState {
 }
 
 #[derive(Component)]
-pub struct Knife {
+pub struct KnifeHolderKnife {
     pub index: i8,
     pub start_ttl: f32,
     pub ttl: f32,
@@ -204,7 +203,7 @@ pub struct Knife {
     target: Vec3,
 }
 
-impl Knife {
+impl KnifeHolderKnife {
     pub fn new (index: i8, ttl: f32, state: KnifeState, target: Vec3) -> Self {
         Self {
             index,
@@ -225,30 +224,30 @@ fn spawn_knife (
 ) {
     let starting_pos: Vec3;
     if state == KnifeState::Creeping {
-        starting_pos = target_pos + Vec3::new(25.0, 0.0, 0.0);
+        starting_pos = target_pos + Vec3::new(20.0, 0.0, 0.0);
     } else {
         starting_pos = target_pos;
     }
     child_builder.spawn( (
-        Knife::new(index, 20.0, state, target_pos),
+        KnifeHolderKnife::new(index, 20.0, state, target_pos),
         SpriteBundle {
             texture: sprite,
             transform: Transform::from_translation(starting_pos),
             sprite: Sprite {
-                custom_size: Some(Vec2::new(62.0,32.0)),
+                custom_size: Some(Vec2::new(50.0,10.0)),
                 ..Default::default()
             },
             ..Default::default()
         },
         RigidBody::KinematicVelocityBased,
         Velocity::default(),
-        Collider::cuboid(0., 0.),
-        Sensor
+        Collider::cuboid(0., 0.), // must have collider to have velocity
+        Sensor 
     )).with_children(|knife_parent| {
         knife_parent.spawn( (
-            Collider::cuboid(21., 8.),
+            Collider::cuboid(14., 5.),
             Sensor,
-            Transform::from_translation(Vec3::new(-5.0, 0.0, 0.0)),
+            Transform::from_translation(Vec3::new(-10.0, 0.0, 0.0)),
         ));
     });
 }
@@ -273,8 +272,8 @@ fn spawn_creeping_knife (
 
 fn handle_knife_collisions (
     mut collisions: EventReader<CollisionEvent>,
-    mut knife_query: Query<(&mut Knife, &Transform, &Children, Entity)>,
-    mut player_query: Query<(&mut Player, &mut Health, Entity), Without<Knife>>,
+    mut knife_query: Query<(&mut KnifeHolderKnife, &Transform, &Children, Entity)>,
+    mut player_query: Query<(&mut Player, &mut Health, Entity), Without<KnifeHolderKnife>>,
     mut commands: Commands
 ) {
     for collision in collisions.read() {
