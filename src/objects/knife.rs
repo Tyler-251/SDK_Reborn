@@ -1,13 +1,13 @@
 use bevy::{log::tracing_subscriber::fmt::time, prelude::*};
 use bevy_rapier2d::{na, prelude::*};
-use crate::flex_load::*;
+use crate::{flex_load::*, player::squid::*};
 
 pub struct KnifePlugin;
 
 impl Plugin for KnifePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(AssetLoadState::Ready), init_test);
-        app.add_systems(Update, tick_knife_holders);
+        app.add_systems(Update, (tick_knife_holders, handle_knife_collisions));
     }
 }
 
@@ -62,16 +62,18 @@ fn tick_knife_holders (
     loaded: Res<LoadedAssets>,
     time: Res<Time>,
     mut query: Query<(&mut KnifeHolder, &Children, Entity)>,
-    mut knife_query: Query<(&mut Velocity, &mut Knife, &Transform, Entity)>,
+    mut knife_query: Query<(&mut Velocity, &mut Knife, &Transform, Entity), Without<Player>>,
+    player_query: Query<(&Transform, &Player, &Collider), Without<Knife>>,
     mut text_query: Query<&mut Text, With<KnifeDebugText>>,
 ) {
+    // knife holder behavior
     for (mut knife_holder, children, entity) in query.iter_mut() {
         knife_holder.timer.tick(time.delta());
         if knife_holder.timer.finished() {
             knife_holder.index = (knife_holder.index + 1) % 5;
             
             for child in children.iter() {
-                if let Ok((_, mut knife_struct, knife_transform, _)) = knife_query.get_mut(*child) {
+                if let Ok((_, mut knife_struct, knife_transform, _,)) = knife_query.get_mut(*child) {
                     if knife_struct.index == knife_holder.index && knife_struct.state == KnifeState::Waiting {
                         knife_struct.state = KnifeState::Shooting;
                         let old_position = knife_transform.translation;
@@ -86,6 +88,7 @@ fn tick_knife_holders (
             }
         }
     }
+    // knife behavior
     for (mut knife_velocity, mut knife_struct, knife_transform, knife_entity) in knife_query.iter_mut() {
         if knife_struct.ttl <= 0.0 {
             commands.entity(knife_entity).despawn();
@@ -96,7 +99,7 @@ fn tick_knife_holders (
         if knife_struct.state == KnifeState::Creeping && knife_transform.translation.x > knife_struct.target.x && knife_struct.ttl > knife_struct.start_ttl - 2.5 {
             //pass
         } else if knife_struct.state == KnifeState::Creeping && knife_transform.translation.x > knife_struct.target.x {
-            knife_velocity.linvel = Vec2::NEG_X * 5.0;
+            knife_velocity.linvel = Vec2::NEG_X * 10.0;
         } else if knife_struct.state == KnifeState::Creeping {
             knife_struct.state = KnifeState::Waiting;
             knife_velocity.linvel = Vec2::ZERO;
@@ -231,9 +234,15 @@ fn spawn_knife (
         },
         RigidBody::KinematicVelocityBased,
         Velocity::default(),
-        Collider::cuboid(31., 10.),
-        Sensor,
-    ));
+        Collider::cuboid(0., 0.),
+        Sensor
+    )).with_children(|knife_parent| {
+        knife_parent.spawn( (
+            Collider::cuboid(21., 8.),
+            Sensor,
+            Transform::from_translation(Vec3::new(-5.0, 0.0, 0.0)),
+        ));
+    });
 }
 
 fn spawn_ready_knife (
@@ -252,4 +261,31 @@ fn spawn_creeping_knife (
     index: i8,
 ) {
     spawn_knife(child_builder, sprite, target_pos, index, KnifeState::Creeping);
+}
+
+fn handle_knife_collisions (
+    mut collisions: EventReader<CollisionEvent>,
+    mut knife_query: Query<(&mut Knife, &Transform, &Children, Entity)>,
+    mut player_query: Query<(&mut Player, &mut Health, Entity), Without<Knife>>,
+    mut commands: Commands
+) {
+    for collision in collisions.read() {
+        match collision {
+            CollisionEvent::Started(a, b, _) => {
+                for (knife_struct, _, knife_children, knife_entity) in knife_query.iter_mut() {
+                    let collider_child = knife_children.get(0).unwrap();
+                    if (a == collider_child || b == collider_child) && knife_struct.state == KnifeState::Shooting {
+                        let (_, mut player_health, player_entity) = player_query.single_mut();
+                        if *b == player_entity || *a == player_entity {
+                            player_health.damage(10.0);
+                            commands.entity(knife_entity).despawn_recursive();
+                        }
+                    }
+                }
+            }
+            CollisionEvent::Stopped(_a, _b, _) => {
+                //pass
+            }
+        }
+    }
 }

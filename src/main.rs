@@ -37,7 +37,7 @@ fn main() {
         DefaultPlugins.set(ImagePlugin::default_nearest()), 
         asset_plugin, 
         RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(64.0), 
-        // RapierDebugRenderPlugin::default(),
+        RapierDebugRenderPlugin::default(),
         SquidPlugin,
         KnifePlugin,
         BackgroundPlugin,

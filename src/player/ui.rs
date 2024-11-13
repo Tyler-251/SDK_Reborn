@@ -8,7 +8,7 @@ pub struct PlayerUIPlugin;
 impl Plugin for PlayerUIPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(AssetLoadState::Ready), setup);
-        app.add_systems(Update, update_input_stack.run_if(in_state(AssetLoadState::Ready)));
+        app.add_systems(Update, (update_input_stack, update_health_bar).run_if(in_state(AssetLoadState::Ready)));
     }
 }
 
@@ -70,6 +70,16 @@ fn update_input_stack (
     }   
     for mut text in query.iter_mut() {
         text.sections[0].value = format!("Input Stack: {}", output);
+    }
+}
+
+fn update_health_bar (
+    mut query: Query<&mut Text, With<HealthBar>>,
+    health_query: Query<&Health, With<Player>>,
+) {
+    for mut text in query.iter_mut() {
+        let health = health_query.single();
+        text.sections[0].value = format!("Health: {}/{}", health.health, health.max_health);
     }
 }
 

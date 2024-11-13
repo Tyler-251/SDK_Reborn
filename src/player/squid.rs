@@ -82,6 +82,7 @@ fn spawn_squid (
         },
         RigidBody::Dynamic,
         Collider::cuboid(25.0, 26.0),
+        ActiveEvents::COLLISION_EVENTS,
         Velocity::default(),
         GravityScale(1.0),
         Friction {
@@ -89,7 +90,8 @@ fn spawn_squid (
             ..default()
         },
         LockedAxes::ROTATION_LOCKED,
-        Player
+        Player,
+        Health::new(100.0),
     )).with_children(|parent| {
         parent.spawn((
             SpriteBundle {
