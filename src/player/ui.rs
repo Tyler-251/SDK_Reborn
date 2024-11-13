@@ -63,7 +63,7 @@ fn update_input_stack (
     let mut output: String = "".to_string();
     for _ in 0..5 {
         if input_stack_clone.len() > 0 {
-            output = format!("{} {}", enum_to_arrow(input_stack_clone.pop().unwrap()), output);
+            output = format!("{} {}", enum_to_arrow(input_stack_clone.pop().unwrap().0), output);
         } else {
             output = format!("  {}", output);
         }

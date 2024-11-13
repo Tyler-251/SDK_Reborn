@@ -7,10 +7,10 @@ pub struct SquidPlugin;
 
 impl Plugin for SquidPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((PlayerUIPlugin, CameraTrackingPlugin));
+        app.add_plugins((PlayerUIPlugin, CameraTrackingPlugin, BaseMovementPlugin));
         app.insert_resource(InputStack::new());
         app.add_systems(OnEnter(AssetLoadState::Ready), spawn_squid);
-        app.add_systems(Update, (control_squid, track_input).run_if(in_state(AssetLoadState::Ready)));
+        app.add_systems(Update, track_input.run_if(in_state(AssetLoadState::Ready)));
     }
 }
 
@@ -81,7 +81,7 @@ fn spawn_squid (
             index: 4,
         },
         RigidBody::Dynamic,
-        Collider::cuboid(25.0, 26.0),
+        Collider::capsule_y(3., 20.),
         ActiveEvents::COLLISION_EVENTS,
         Velocity::default(),
         GravityScale(1.0),
@@ -110,56 +110,4 @@ fn spawn_squid (
         ));
     });
     commands.spawn(Camera2dBundle::default());
-}
-
-fn control_squid (
-    mut player_query: Query<(&mut Velocity, &mut GravityScale, &mut Sprite, &mut Children), With<Player>>,
-    mut sprites_query: Query<&mut Sprite, Without<Player>>,
-    input: Res<ButtonInput<KeyCode>>,
-    time: Res<Time>
-) {
-    if player_query.iter().count() == 0 {return}
-    let (mut velocity, mut gravity, mut sprite, player_children) = player_query.single_mut();
-    let children = player_children.iter().collect::<Vec<&Entity>>();
-    let speed = 170.0;
-
-    let mut movement_vector: Vec2 = Vec2::ZERO;
-    if input.pressed(KeyCode::KeyA) {
-        movement_vector.x -= 1.0;
-        sprite.flip_x = true;
-        children.iter().for_each(|child| {
-            if let Ok(mut child_sprite) = sprites_query.get_mut(**child) {
-                child_sprite.flip_x = true;
-            }
-        });
-        
-    }
-    if input.pressed(KeyCode::KeyD) {
-        movement_vector.x += 1.0;
-        sprite.flip_x = false;
-        children.iter().for_each(|child| {
-            if let Ok(mut child_sprite) = sprites_query.get_mut(**child) {
-                child_sprite.flip_x = false;
-            }
-        });
-    }
-
-    if movement_vector != Vec2::ZERO {
-        velocity.linvel.x = movement_vector.x * speed;
-    } else {
-        velocity.linvel.x = velocity.linvel.x * 0.05_f32.powf(time.delta_seconds());
-    }
-
-    if input.just_pressed(KeyCode::Space) {
-        velocity.linvel.y = 300.0;
-    }
-
-    if input.pressed(KeyCode::Space) && velocity.linvel.y > 0.0 {
-        gravity.0 = 0.7;
-    } else if input.pressed(KeyCode::KeyS) {
-        gravity.0 = 2.5;
-    } else {
-        gravity.0 = 1.3;
-    } 
-
 }

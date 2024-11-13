@@ -1,5 +1,5 @@
-use bevy::{log::tracing_subscriber::fmt::time, prelude::*};
-use bevy_rapier2d::{na, prelude::*};
+use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 use crate::{flex_load::*, player::squid::*};
 
 pub struct KnifePlugin;
@@ -15,7 +15,7 @@ pub fn init_test (
     mut commands: Commands,
     loaded: Res<LoadedAssets>,
 ) {
-    spawn_knife_holder(commands, loaded, Vec2::X * 200., KnifeHolder::new(2.0));
+    spawn_knife_holder(commands, loaded, Vec2::X * 200.,Quat::from_rotation_z(3.14 / 2.), KnifeHolder::new(2.0));
 }
 
 // #region Knife Holder
@@ -62,7 +62,7 @@ fn tick_knife_holders (
     loaded: Res<LoadedAssets>,
     time: Res<Time>,
     mut query: Query<(&mut KnifeHolder, &Children, Entity)>,
-    mut knife_query: Query<(&mut Velocity, &mut Knife, &Transform, Entity), Without<Player>>,
+    mut knife_query: Query<(&mut Velocity, &mut Knife, &Transform, &GlobalTransform, Entity), Without<Player>>,
     player_query: Query<(&Transform, &Player, &Collider), Without<Knife>>,
     mut text_query: Query<&mut Text, With<KnifeDebugText>>,
 ) {
@@ -73,7 +73,7 @@ fn tick_knife_holders (
             knife_holder.index = (knife_holder.index + 1) % 5;
             
             for child in children.iter() {
-                if let Ok((_, mut knife_struct, knife_transform, _,)) = knife_query.get_mut(*child) {
+                if let Ok((_, mut knife_struct, knife_transform, _,_)) = knife_query.get_mut(*child) {
                     if knife_struct.index == knife_holder.index && knife_struct.state == KnifeState::Waiting {
                         knife_struct.state = KnifeState::Shooting;
                         let old_position = knife_transform.translation;
@@ -89,22 +89,29 @@ fn tick_knife_holders (
         }
     }
     // knife behavior
-    for (mut knife_velocity, mut knife_struct, knife_transform, knife_entity) in knife_query.iter_mut() {
+    for (mut knife_velocity, mut knife_struct, knife_transform, knife_global, knife_entity) in knife_query.iter_mut() {
         if knife_struct.ttl <= 0.0 {
             commands.entity(knife_entity).despawn();
         } else {
             knife_struct.ttl -= time.delta_seconds();
         }
 
+        //make unit direction vector
+        let base_movement = Vec2::NEG_X;
+        let rotation: Quat = knife_global.to_scale_rotation_translation().1;
+        let movement = rotation.mul_vec3(base_movement.extend(0.0));
+        let movement = movement.normalize().truncate();
+        
+
         if knife_struct.state == KnifeState::Creeping && knife_transform.translation.x > knife_struct.target.x && knife_struct.ttl > knife_struct.start_ttl - 2.5 {
             //pass
         } else if knife_struct.state == KnifeState::Creeping && knife_transform.translation.x > knife_struct.target.x {
-            knife_velocity.linvel = Vec2::NEG_X * 10.0;
+            knife_velocity.linvel = movement * 10.0;
         } else if knife_struct.state == KnifeState::Creeping {
             knife_struct.state = KnifeState::Waiting;
             knife_velocity.linvel = Vec2::ZERO;
         } else if knife_struct.state == KnifeState::Shooting {
-            knife_velocity.linvel = Vec2::NEG_X * 300.0;
+            knife_velocity.linvel = movement * 300.0;
         }
 
     }
@@ -115,6 +122,7 @@ pub fn spawn_knife_holder (
     mut commands: Commands,
     loaded: Res<LoadedAssets>,
     position: Vec2,
+    rotation: Quat,
     knife_holder: KnifeHolder,
 ) {
     //knife base
@@ -122,7 +130,7 @@ pub fn spawn_knife_holder (
         knife_holder.clone(),
         SpriteBundle {
             texture: loaded.get_typed::<Image>("knife_holder_base").unwrap(),
-            transform: Transform::from_translation(position.extend(0.)),
+            transform: Transform::from_translation(position.extend(0.)) * Transform::from_rotation(rotation),
             sprite: Sprite {
                 custom_size: Some(Vec2::new(64.0,64.0)),
                 ..Default::default()

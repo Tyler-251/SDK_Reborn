@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use bevy::prelude::*;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -10,7 +12,7 @@ pub enum InputDirection {
 
 #[derive(Resource)]
 pub struct InputStack {
-    pub stack: Vec<InputDirection>,
+    pub stack: Vec<(InputDirection, Instant)>,
 }
 
 impl InputStack {
@@ -20,9 +22,9 @@ impl InputStack {
         }
     }
     pub fn push (&mut self, direction: InputDirection) {
-        self.stack.push(direction);
+        self.stack.push((direction, Instant::now()));
     }
-    pub fn pop (&mut self) -> Option<InputDirection> {
+    pub fn pop (&mut self) -> Option<(InputDirection, Instant)> {
         self.stack.pop()
     }
     pub fn clear (&mut self) {
