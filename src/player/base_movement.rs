@@ -24,13 +24,11 @@ fn control_squid (
     let mut movement_vector: Vec2 = Vec2::ZERO;
     if input.pressed(KeyCode::KeyA) {
         movement_vector.x -= 1.0;
-        sprite.flip_x = true;
         player_anim.face = PlayerFace::Left;
         
     }
     if input.pressed(KeyCode::KeyD) {
         movement_vector.x += 1.0;
-        sprite.flip_x = false;
         player_anim.face = PlayerFace::Right;
     }
 
@@ -91,31 +89,34 @@ fn manage_dash (
                 if time_1.elapsed().as_secs_f32() - time_2.elapsed().as_secs_f32() < 0.1 && time_2.elapsed().as_secs_f32() < dash_timer.timer.duration().as_secs_f32() && dash_timer.timer.finished() {
                     player_query.single_mut().0.linvel.x = -500.0;
                     dash_timer.timer.reset();
+                    dash_timer.direction = InputDirection::Left;
                 }
             }
             InputDirection::Right => {
                 if time_1.elapsed().as_secs_f32() - time_2.elapsed().as_secs_f32() < 0.1 && time_2.elapsed().as_secs_f32() < dash_timer.timer.duration().as_secs_f32() && dash_timer.timer.finished() {
                     player_query.single_mut().0.linvel.x = 500.0;
                     dash_timer.timer.reset();
+                    dash_timer.direction = InputDirection::Right;
                 }
             }
             InputDirection::Up => {
                 if time_1.elapsed().as_secs_f32() - time_2.elapsed().as_secs_f32() < 0.1 && time_2.elapsed().as_secs_f32() < dash_timer.timer.duration().as_secs_f32() && dash_timer.timer.finished() {
                     player_query.single_mut().0.linvel.y = 500.0;
                     dash_timer.timer.reset();
+                    dash_timer.direction = InputDirection::Up;
                 }
             }
             InputDirection::Down => {
                 if time_1.elapsed().as_secs_f32() - time_2.elapsed().as_secs_f32() < 0.1 && time_2.elapsed().as_secs_f32() < dash_timer.timer.duration().as_secs_f32() && dash_timer.timer.finished() {
                     player_query.single_mut().0.linvel.y = -800.0;
                     dash_timer.timer.reset();
+                    dash_timer.direction = InputDirection::Down;
                 }
             }
         }
     }
 
     for (_, _, mut player_anim) in player_query.iter_mut() {
-        println!("{}", dash_timer.timer.elapsed_secs());
         if !dash_timer.timer.finished() {
             player_anim.set_state(AnimState::Dash);
         }
@@ -125,6 +126,7 @@ fn manage_dash (
 #[derive(Resource)]
 pub struct DashTimer {
     pub timer: Timer,
+    pub direction: InputDirection,
 }
 impl DashTimer {
     pub fn new (duration: f32) -> Self {
@@ -132,6 +134,7 @@ impl DashTimer {
         new_timer.set_elapsed(Duration::from_secs_f32(duration));
         Self {
             timer: new_timer,
+            direction: InputDirection::Right,
         }
     }
 }
@@ -140,5 +143,4 @@ fn tick_dash_timer (
     time: Res<Time>,
 ) {
     dash_timer.timer.tick(time.delta());
-
 }

@@ -25,7 +25,7 @@ static PLAYER_Z: f32 = 10.0;
 fn main() {
     let mut asset_plugin = AssetLoadPlugin::new();
     asset_plugin.add_asset::<Image>("squid", "squid/squiddy_flat.png");
-    asset_plugin.add_asset::<Image>("squid_map", "squid/squid_map2.png");
+    asset_plugin.add_asset::<Image>("squid_map", "squid/squid_map3.png");
     asset_plugin.add_asset::<Image>("rat_map", "rat/rat_map.png");
     asset_plugin.add_asset::<Image>("arrow", "squid/squid_arrow_0.png");
     asset_plugin.add_asset::<Image>("knife", "knife/knife.png");
@@ -43,11 +43,11 @@ fn main() {
         DefaultPlugins.set(ImagePlugin::default_nearest()), 
         asset_plugin, 
         RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(64.0), 
-        // RapierDebugRenderPlugin::default(),
+        RapierDebugRenderPlugin::default(),
         SquidPlugin,
         KnifePlugin,
         BackgroundPlugin,
-        RatPlugin
+        // RatPlugin
     ));
     app.add_systems(OnEnter(AssetLoadState::Ready), make_platform);
     app.run();

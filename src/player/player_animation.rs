@@ -66,8 +66,12 @@ impl PlayerAnimation {
 // 6: head sprite 2
 // 7: head sprite 3
 // 8: angry head sprite 0
-// 9: full body dash
-// 10: full body fall
+// 9: full body dash 0
+// 10: full body dash 1
+// 11: full body fall 0
+// 12: full body fall 1
+// 13: head jump
+// 14: leg jump
 
 fn animate_squid (
     mut player_query: Query<(&mut PlayerAnimation, &mut Sprite, &mut TextureAtlas, &Children), With<Player>>,
@@ -96,7 +100,8 @@ fn animate_squid (
         AnimState::Idle => {
             head_atlas.index = 4;
             leg_atlas.index = 2;
-            if player_anim.frame % 20 == 17 {
+
+            if player_anim.frame % 20 == 17 { // every 20 frames blink
                 head_atlas.index = 5;
             } else if player_anim.frame % 20 == 18 {
                 head_atlas.index = 6;
@@ -106,6 +111,7 @@ fn animate_squid (
         },
         AnimState::Walk => {
             head_atlas.index = 4;
+
             if player_anim.frame % 2 == 0 {
                 leg_atlas.index = 2;
             } else {
@@ -113,13 +119,17 @@ fn animate_squid (
             }
         },
         AnimState::Dash => {
-            head_atlas.index = 9;
-            leg_atlas.index = 9;
-        }
+            head_atlas.index = player_anim.frame % 2 + 9;
+            leg_atlas.index = player_anim.frame % 2 + 9;
+        },
         AnimState::Fall => {
-            head_atlas.index = 10;
-            leg_atlas.index = 10;
-        }
+            head_atlas.index = player_anim.frame % 2 + 11;
+            leg_atlas.index = player_anim.frame % 2 + 11;
+        },
+        AnimState::Jump => {
+            head_atlas.index = 13;
+            leg_atlas.index = 14;
+        },
         _ => {},
     }
 }

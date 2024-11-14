@@ -15,7 +15,7 @@ pub fn init_test (
     commands: Commands,
     loaded: Res<LoadedAssets>,
 ) {
-    spawn_knife_holder(commands, loaded, Vec2::X * 200.,Quat::from_rotation_z(3.14 / 2.), KnifeHolder::new(2.0));
+    spawn_knife_holder(commands, loaded, Vec2::X * 200.,Quat::from_rotation_z(0.), KnifeHolder::new(2.0));
 }
 
 // #region Knife Holder

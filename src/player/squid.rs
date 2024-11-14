@@ -63,7 +63,7 @@ fn spawn_squid (
     // 6: head sprite 2
     // 7: head sprite 3
     let squid_map_layout = texture_atlas_layouts.add(
-        TextureAtlasLayout::from_grid(UVec2::splat(32), 3, 4, None, None)
+        TextureAtlasLayout::from_grid(UVec2::splat(32), 4, 4, None, None)
     );
     
     commands.spawn((
@@ -108,6 +108,12 @@ fn spawn_squid (
                 layout: squid_map_layout.clone(),
                 index: 2,
             },
+        ));
+        parent.spawn((
+            Name::new("feet"),
+            Transform::from_translation(Vec3::new(0.0, -25.0, 0.0)),
+            Collider::ball(3.0),
+            Sensor
         ));
     });
     commands.spawn(Camera2dBundle::default());
