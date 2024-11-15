@@ -1,4 +1,4 @@
-use bevy::{prelude::*, sprite};
+use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use crate::player::*;
 
@@ -139,7 +139,6 @@ fn animate_squid (
         AnimState::Jump => {
             head_atlas.index = 13;
             leg_atlas.index = 14;
-        },
-        _ => {},
+        }
     }
 }
