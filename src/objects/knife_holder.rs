@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use crate::{flex_load::*, player::squid::*};
+use crate::{flex_load::*, player::squid::*, scenes::*};
 
 pub struct KnifePlugin;
 
@@ -137,6 +137,7 @@ pub fn spawn_knife_holder (
             ..Default::default()
         },
         Collider::cuboid(30.0, 32.0),
+        Platform::SOLID,
     )).with_children(|parent| {
         //knife holder mask 0
         parent.spawn( ( 
@@ -273,7 +274,7 @@ fn spawn_creeping_knife (
 fn handle_knife_collisions (
     mut collisions: EventReader<CollisionEvent>,
     mut knife_query: Query<(&mut KnifeHolderKnife, &Transform, &Children, Entity)>,
-    mut player_query: Query<(&mut Player, &mut Health, Entity), Without<KnifeHolderKnife>>,
+    mut player_query: Query<(&mut Player, Entity), Without<KnifeHolderKnife>>,
     mut commands: Commands
 ) {
     for collision in collisions.read() {
@@ -282,17 +283,15 @@ fn handle_knife_collisions (
                 for (knife_struct, _, knife_children, knife_entity) in knife_query.iter_mut() {
                     let collider_child = knife_children.get(0).unwrap();
                     if (a == collider_child || b == collider_child) && knife_struct.state == KnifeState::Shooting {
-                        let (_, mut player_health, player_entity) = player_query.single_mut();
+                        let (mut player, player_entity) = player_query.single_mut();
                         if *b == player_entity || *a == player_entity {
-                            player_health.damage(10.0);
+                            player.health.damage(10.0);
                             commands.entity(knife_entity).despawn_recursive();
                         }
                     }
                 }
             }
-            CollisionEvent::Stopped(_a, _b, _) => {
-                //pass
-            }
+            _ => {}
         }
     }
 }

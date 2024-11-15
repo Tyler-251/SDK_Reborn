@@ -9,14 +9,14 @@ pub mod player;
 use player::squid::*;
 
 pub mod objects;
-use objects::knife::*;
+use objects::knife_holder::*;
 
 pub mod scenes;
-use rat::RatPlugin;
 use scenes::background::*;
+use scenes::*;
 
 pub mod enemies;
-use enemies::rat::*;
+// use enemies::rat::*;
 
 static BACKGROUND_Z: f32 = -100.0;
 static PLATFORM_Z: f32 = -50.0;
@@ -43,7 +43,7 @@ fn main() {
         DefaultPlugins.set(ImagePlugin::default_nearest()), 
         asset_plugin, 
         RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(64.0), 
-        RapierDebugRenderPlugin::default(),
+        // RapierDebugRenderPlugin::default(),
         SquidPlugin,
         KnifePlugin,
         BackgroundPlugin,
@@ -68,6 +68,7 @@ fn make_platform (
             ..Default::default()
         },
         RigidBody::Fixed,
-        Collider::cuboid(128., 32.)
+        Collider::cuboid(128., 32.),
+        Platform::SOLID,
     ));
 }

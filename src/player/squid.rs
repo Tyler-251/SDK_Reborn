@@ -15,7 +15,21 @@ impl Plugin for SquidPlugin {
 }
 
 #[derive(Component)] 
-pub struct Player;
+pub struct Player {
+    pub grounded: bool,
+    pub has_jump: bool,
+    pub health: Health,
+}
+
+impl Player {
+    pub fn new () -> Self {
+        Self {
+            grounded: false,
+            has_jump: false,
+            health: Health::new(100.0),
+        }
+    }
+}
 
 
 #[derive(Component)]
@@ -53,15 +67,6 @@ fn spawn_squid (
     loaded: Res<LoadedAssets>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    // Squid layout:
-    // 0: full sprite 0
-    // 1: full sprite 1
-    // 2: legs sprite 0
-    // 3: legs sprite 1
-    // 4: head sprite 0
-    // 5: head sprite 1
-    // 6: head sprite 2
-    // 7: head sprite 3
     let squid_map_layout = texture_atlas_layouts.add(
         TextureAtlasLayout::from_grid(UVec2::splat(32), 4, 4, None, None)
     );
@@ -91,8 +96,7 @@ fn spawn_squid (
             ..default()
         },
         LockedAxes::ROTATION_LOCKED,
-        Player,
-        Health::new(100.0),
+        Player::new(),
     )).with_children(|parent| {
         parent.spawn((
             SpriteBundle {
@@ -111,9 +115,10 @@ fn spawn_squid (
         ));
         parent.spawn((
             Name::new("feet"),
-            Transform::from_translation(Vec3::new(0.0, -25.0, 0.0)),
-            Collider::ball(3.0),
-            Sensor
+            Transform::from_translation(Vec3::new(0.0, -10.0, 0.0)),
+            Collider::ball(16.),
+            Sensor,
+            ActiveEvents::COLLISION_EVENTS,
         ));
     });
     commands.spawn(Camera2dBundle::default());

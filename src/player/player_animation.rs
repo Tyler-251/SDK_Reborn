@@ -74,12 +74,12 @@ impl PlayerAnimation {
 // 14: leg jump
 
 fn animate_squid (
-    mut player_query: Query<(&mut PlayerAnimation, &mut Sprite, &mut TextureAtlas, &Children), With<Player>>,
+    mut player_query: Query<(&Player, &Velocity, &mut PlayerAnimation, &mut Sprite, &mut TextureAtlas, &Children)>,
     mut sprite_query: Query<(&mut Sprite, &mut TextureAtlas), Without<Player>>,
     time: Res<Time>,
 ) {
     if player_query.iter().count() == 0 {return}
-    let (mut player_anim, mut head_sprite, mut head_atlas, player_children) = player_query.single_mut();
+    let (player_struct, player_velocity, mut player_anim, mut head_sprite, mut head_atlas, player_children) = player_query.single_mut();
     let (mut leg_sprite, mut leg_atlas) = sprite_query.get_mut(player_children[0]).unwrap();
     player_anim.timer.tick(time.delta());
     if player_anim.timer.finished() {
@@ -96,6 +96,16 @@ fn animate_squid (
         leg_sprite.flip_x = false;
     }
 
+    // determine if falling
+    if player_anim.state != AnimState::Dash && !player_struct.grounded {
+        if player_velocity.linvel.y > 0.0 {
+            player_anim.set_state(AnimState::Jump);
+        } else if player_velocity.linvel.y < -20.0 {
+            player_anim.set_state(AnimState::Fall);
+        }
+    }
+
+    // animation states
     match player_anim.state {
         AnimState::Idle => {
             head_atlas.index = 4;

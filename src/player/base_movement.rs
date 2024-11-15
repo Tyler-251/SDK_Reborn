@@ -1,24 +1,24 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::time::{Duration, Instant};
-use crate::player::*;
+use crate::{player::*, scenes::*};
 pub struct BaseMovementPlugin;
 
 impl Plugin for BaseMovementPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(DashTimer::new(0.5));
-        app.add_systems(Update, ((control_squid, manage_dash).chain(), tick_dash_timer));
+        app.add_systems(Update, ((control_squid, manage_dash).chain(), tick_dash_timer, manage_feet));
     }
 }
 
 fn control_squid (
-    mut player_query: Query<(&mut Velocity, &mut GravityScale, &mut Sprite, &mut PlayerAnimation), With<Player>>,
+    mut player_query: Query<(&mut Player, &mut Velocity, &mut GravityScale, &mut PlayerAnimation)>,
     input: Res<ButtonInput<KeyCode>>,
     dash_timer: Res<DashTimer>,
     time: Res<Time>,
 ) {
     if player_query.iter().count() == 0 {return}
-    let (mut velocity, mut gravity, mut sprite, mut player_anim) = player_query.single_mut();
+    let (mut player_struct, mut velocity, mut gravity, mut player_anim) = player_query.single_mut();
     let speed = 170.0;
 
     let mut movement_vector: Vec2 = Vec2::ZERO;
@@ -58,8 +58,10 @@ fn control_squid (
         }
     }
 
-    if input.just_pressed(KeyCode::Space) {
+    if input.just_pressed(KeyCode::Space) && player_struct.has_jump {
         velocity.linvel.y = 300.0;
+        player_struct.has_jump = false;
+        player_struct.grounded = false;
     }
 
     if input.pressed(KeyCode::Space) && velocity.linvel.y > 0.0 {
@@ -70,6 +72,33 @@ fn control_squid (
         gravity.0 = 1.3;
     } 
 
+}
+
+fn manage_feet (
+    mut player_query: Query<(&mut Player, &Children)>,
+    mut platform_query: Query<Entity, With<Platform>>,
+    mut collision_events: EventReader<CollisionEvent>
+) {
+    if player_query.iter().count() == 0 {return}
+    if platform_query.iter().count() == 0 {return}
+    let (mut player_struct, player_children) = player_query.single_mut();
+    let feet_entity = player_children.iter().nth(1);
+
+    for collision_event in collision_events.read() {
+        match collision_event {
+            CollisionEvent::Started(a, b, _) => {
+                if (feet_entity == Some(a) || feet_entity == Some(b)) && (platform_query.get_mut(*a).is_ok() || platform_query.get_mut(*b).is_ok()) {
+                    player_struct.grounded = true;
+                    player_struct.has_jump = true;
+                }
+            },
+            CollisionEvent::Stopped(a, b, _) => {
+                if (feet_entity == Some(a) || feet_entity == Some(b)) && (platform_query.get_mut(*a).is_ok() || platform_query.get_mut(*b).is_ok()) {
+                    player_struct.grounded = false;
+                }
+            }
+        }
+    }
 }
 
 fn manage_dash (

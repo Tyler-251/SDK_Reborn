@@ -75,11 +75,11 @@ fn update_input_stack (
 
 fn update_health_bar (
     mut query: Query<&mut Text, With<HealthBar>>,
-    health_query: Query<&Health, With<Player>>,
+    player_query: Query<&Player>,
 ) {
     for mut text in query.iter_mut() {
-        let health = health_query.single();
-        text.sections[0].value = format!("Health: {}/{}", health.health, health.max_health);
+        let player = player_query.single();
+        text.sections[0].value = format!("Health: {}/{}", player.health.health, player.health.max_health);
     }
 }
 
