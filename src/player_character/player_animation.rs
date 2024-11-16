@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use crate::player::*;
+use crate::player_character::*;
 
 pub struct PlayerAnimationPlugin;
 
@@ -76,6 +76,7 @@ impl PlayerAnimation {
 fn animate_squid (
     mut player_query: Query<(&Player, &Velocity, &mut PlayerAnimation, &mut Sprite, &mut TextureAtlas, &Children)>,
     mut sprite_query: Query<(&mut Sprite, &mut TextureAtlas), Without<Player>>,
+    dash_timer: Res<DashTimer>,
     time: Res<Time>,
 ) {
     if player_query.iter().count() == 0 {return}
@@ -129,8 +130,16 @@ fn animate_squid (
             }
         },
         AnimState::Dash => {
-            head_atlas.index = player_anim.frame % 2 + 9;
-            leg_atlas.index = player_anim.frame % 2 + 9;
+            if dash_timer.direction == InputDirection::Left || dash_timer.direction == InputDirection::Right {
+                head_atlas.index = player_anim.frame % 2 + 9;
+                leg_atlas.index = player_anim.frame % 2 + 9;
+            } else if dash_timer.direction == InputDirection::Down {
+                head_atlas.index = player_anim.frame % 2 + 11;
+                leg_atlas.index = player_anim.frame % 2 + 11;
+            } else if dash_timer.direction == InputDirection::Up {
+                head_atlas.index = 13;
+                leg_atlas.index = 14;
+            }
         },
         AnimState::Fall => {
             head_atlas.index = player_anim.frame % 2 + 11;

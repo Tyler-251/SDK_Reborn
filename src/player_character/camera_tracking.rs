@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::player::*;
+use crate::player_character::*;
 use crate::flex_load::*;
 
 pub struct CameraTrackingPlugin;

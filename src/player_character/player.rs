@@ -1,13 +1,14 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use crate::{flex_load::*, PLAYER_Z};
-use crate::player::*;
+use crate::player_character::*;
+use bevy_modern_pixel_camera::prelude::*;
 
 pub struct SquidPlugin;
 
 impl Plugin for SquidPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((PlayerUIPlugin, CameraTrackingPlugin, BaseMovementPlugin, PlayerAnimationPlugin));
+        app.add_plugins((PixelCameraPlugin, PlayerUIPlugin, CameraTrackingPlugin, BaseMovementPlugin, PlayerAnimationPlugin, InkPlugin));
         app.insert_resource(InputStack::new());
         app.add_systems(OnEnter(AssetLoadState::Ready), spawn_squid);
         app.add_systems(Update, track_input.run_if(in_state(AssetLoadState::Ready)));
@@ -121,5 +122,9 @@ fn spawn_squid (
             ActiveEvents::COLLISION_EVENTS,
         ));
     });
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn((
+        Camera2dBundle::default(),
+        PixelZoom::FitSize { width: 1280, height: 720 },
+        PixelViewport
+    ));
 }

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use super::squid::*;
+use super::player::*;
 use crate::flex_load::*;
 use super::input_track::*;
 

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::time::{Duration, Instant};
-use crate::{player::*, scenes::*};
+use crate::{player_character::*, scenes::*};
 pub struct BaseMovementPlugin;
 
 impl Plugin for BaseMovementPlugin {
@@ -12,13 +12,15 @@ impl Plugin for BaseMovementPlugin {
 }
 
 fn control_squid (
-    mut player_query: Query<(&mut Player, &mut Velocity, &mut GravityScale, &mut PlayerAnimation)>,
+    mut commands: Commands,
+    mut images: ResMut<Assets<Image>>,
+    mut player_query: Query<(&mut Player, &mut Velocity, &mut GravityScale, &mut PlayerAnimation, &Transform)>,
     input: Res<ButtonInput<KeyCode>>,
     dash_timer: Res<DashTimer>,
     time: Res<Time>,
 ) {
     if player_query.iter().count() == 0 {return}
-    let (mut player_struct, mut velocity, mut gravity, mut player_anim) = player_query.single_mut();
+    let (mut player_struct, mut velocity, mut gravity, mut player_anim, player_transform) = player_query.single_mut();
     let speed = 170.0;
 
     let mut movement_vector: Vec2 = Vec2::ZERO;
@@ -62,6 +64,12 @@ fn control_squid (
         velocity.linvel.y = 300.0;
         player_struct.has_jump = false;
         player_struct.grounded = false;
+        spawn_splotch(
+            &mut commands,
+            64, 
+            player_transform.translation.xy() + Vec2::new(0.0, -20.0),
+            images
+        );
     }
 
     if input.pressed(KeyCode::Space) && velocity.linvel.y > 0.0 {

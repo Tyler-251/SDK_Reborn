@@ -1,12 +1,13 @@
 use bevy::prelude::*;
 use bevy::render::texture::ImagePlugin;
 use bevy_rapier2d::prelude::*;
+use bevy_modern_pixel_camera::prelude::*;
 
 pub mod flex_load;
 use flex_load::*;
 
-pub mod player;
-use player::squid::*;
+pub mod player_character;
+use player_character::player::*;
 
 pub mod objects;
 use objects::knife_holder::*;
@@ -43,7 +44,7 @@ fn main() {
         DefaultPlugins.set(ImagePlugin::default_nearest()), 
         asset_plugin, 
         RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(64.0), 
-        // RapierDebugRenderPlugin::default(),
+        RapierDebugRenderPlugin::default(),
         SquidPlugin,
         KnifePlugin,
         BackgroundPlugin,

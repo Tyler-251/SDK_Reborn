@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use crate::{flex_load::*, player::squid::*, scenes::*};
+use crate::{flex_load::*, player_character::player::*, scenes::*};
 
 pub struct KnifePlugin;
 
