@@ -26,16 +26,17 @@ pub fn spawn_splotch (
 ) {
     let mut rng = rand::thread_rng();
     let perlin = Perlin::new(rng.gen_range(0..1000));
+    let scaled_size = size / 2;
 
-    let mut texture_data = vec![0u8; size * size * 4];
-    for y in 0..size {
-        for x in 0..size {
-            let value = perlin.get([5. * x as f64 / size as f64, 10. * y as f64 / size as f64]);
-            let x_weight = 1.0 - (2.0 * (x as f64 / size as f64 - 0.5)).abs(); // linear 0.0 to 1.0 (0.0 at the edges, 1.0 in the middle)
-            let y_weight = 1.0 - (2.0 * (y as f64 / size as f64 - 0.5)).abs();
+    let mut texture_data = vec![0u8; scaled_size * scaled_size * 4];
+    for y in 0..scaled_size {
+        for x in 0..scaled_size {
+            let value = perlin.get([5.0 * x as f64 / scaled_size as f64, 10.0 * y as f64 / scaled_size as f64]);
+            let x_weight = 1.0 - (2.0 * (x as f64 / scaled_size as f64 - 0.5)).abs(); // linear 0.0 to 1.0 (0.0 at the edges, 1.0 in the middle)
+            let y_weight = 1.0 - (2.0 * (y as f64 / scaled_size as f64 - 0.5)).abs();
             let weight = x_weight * y_weight;
-            let value= (value + (weight * 1.5))* weight;
-            let mut pixel_value = ((value * 1000.)).min(255.).max(0.) as u8;
+            let value = (value + (weight * 1.5)) * weight;
+            let mut pixel_value = ((value * 1000.0).min(255.0).max(0.0)) as u8;
 
             if pixel_value > 150 { // make toon
                 pixel_value = 200;
@@ -43,18 +44,18 @@ pub fn spawn_splotch (
                 pixel_value = 0;
             }
 
-            let index = (y * size + x) * 4;
+            let index = (y * scaled_size + x) * 4;
             texture_data[index] = 0; // R
             texture_data[index + 1] = 0; // G
             texture_data[index + 2] = 0; // B
-            texture_data[index + 3] = pixel_value // A
+            texture_data[index + 3] = pixel_value; // A
         }
     }
 
     let splotch_image = Image::new_fill(
         Extent3d {
-            width: size as u32,
-            height: size as u32,
+            width: scaled_size as u32,
+            height: scaled_size as u32,
             depth_or_array_layers: 1,
         },
         TextureDimension::D2,

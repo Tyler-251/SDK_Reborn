@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, transform::commands};
 use bevy_rapier2d::prelude::*;
 use std::time::{Duration, Instant};
 use crate::{player_character::*, scenes::*};
@@ -111,8 +111,10 @@ fn manage_feet (
 
 fn manage_dash (
     input_stack: ResMut<InputStack>,
-    mut player_query: Query<(&mut Velocity, &mut GravityScale, &mut PlayerAnimation), With<Player>>,
+    mut player_query: Query<(&mut Velocity, &mut GravityScale, &mut PlayerAnimation, &Transform), With<Player>>,
     mut dash_timer: ResMut<DashTimer>,
+    mut commands: Commands,
+    mut images: ResMut<Assets<Image>>
 ) {
     let last_two_inputs = input_stack.into_inner().stack.iter().rev().take(2).collect::<Vec<&(InputDirection, Instant)>>();
     if last_two_inputs.len() != 2 {return}
@@ -127,6 +129,12 @@ fn manage_dash (
                     player_query.single_mut().0.linvel.x = -500.0;
                     dash_timer.timer.reset();
                     dash_timer.direction = InputDirection::Left;
+                    spawn_splotch(
+                        &mut commands,
+                        64, 
+                        player_query.single().3.translation.xy() + Vec2::new(0.0, -20.0),
+                        images
+                    );
                 }
             }
             InputDirection::Right => {
@@ -134,6 +142,11 @@ fn manage_dash (
                     player_query.single_mut().0.linvel.x = 500.0;
                     dash_timer.timer.reset();
                     dash_timer.direction = InputDirection::Right;
+                    spawn_splotch(
+                        &mut commands,
+                        100, 
+                        player_query.single().3.translation.xy() + Vec2::new(0.0, -20.0),                    images
+                    );
                 }
             }
             InputDirection::Up => {
@@ -141,6 +154,11 @@ fn manage_dash (
                     player_query.single_mut().0.linvel.y = 500.0;
                     dash_timer.timer.reset();
                     dash_timer.direction = InputDirection::Up;
+                    spawn_splotch(
+                        &mut commands,
+                        1000, 
+                        player_query.single().3.translation.xy() + Vec2::new(0.0, -20.0),                    images
+                    );
                 }
             }
             InputDirection::Down => {
@@ -148,12 +166,18 @@ fn manage_dash (
                     player_query.single_mut().0.linvel.y = -800.0;
                     dash_timer.timer.reset();
                     dash_timer.direction = InputDirection::Down;
+                    spawn_splotch(
+                        &mut commands,
+                        100, 
+                        player_query.single().3.translation.xy() + Vec2::new(0.0, -20.0),                    images
+                    );
                 }
             }
+            
         }
     }
 
-    for (_, _, mut player_anim) in player_query.iter_mut() {
+    for (_, _, mut player_anim, _) in player_query.iter_mut() {
         if !dash_timer.timer.finished() {
             player_anim.set_state(AnimState::Dash);
         }
