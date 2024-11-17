@@ -145,7 +145,8 @@ fn manage_dash (
                     spawn_splotch(
                         &mut commands,
                         100, 
-                        player_query.single().3.translation.xy() + Vec2::new(0.0, -20.0),                    images
+                        player_query.single().3.translation.xy() + Vec2::new(0.0, -20.0),
+                        images
                     );
                 }
             }
