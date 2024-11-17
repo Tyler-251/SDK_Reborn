@@ -13,14 +13,14 @@ impl Plugin for BaseMovementPlugin {
 }
 
 fn control_squid (
-    mut player_query: Query<(&mut Player, &mut Velocity, &mut GravityScale, &mut PlayerAnimation, &Transform)>,
+    mut player_query: Query<(&mut Player, &mut Velocity, &mut GravityScale, &mut PlayerAnimation, &mut Transform)>,
     mut splotch_registry: ResMut<SplotchRegistry>,
     input: Res<ButtonInput<KeyCode>>,
     dash_timer: Res<DashTimer>,
     time: Res<Time>,
 ) {
     if player_query.iter().count() == 0 {return}
-    let (mut player_struct, mut velocity, mut gravity, mut player_anim, player_transform) = player_query.single_mut();
+    let (mut player_struct, mut velocity, mut gravity, mut player_anim, mut player_transform) = player_query.single_mut();
     let speed = 170.0;
 
     let mut movement_vector: Vec2 = Vec2::ZERO;
@@ -74,6 +74,11 @@ fn control_squid (
     } else {
         gravity.0 = 1.3;
     } 
+
+    if player_transform.translation.y < -1000.0 {
+        player_transform.translation.y = 0.0;
+        player_transform.translation.x = 0.0;
+    }
 
 }
 

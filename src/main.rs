@@ -34,6 +34,7 @@ fn main() {
 
     asset_plugin.add_asset::<Image>("background", "waterscene/background/background.png");
     asset_plugin.add_asset::<Image>("reef", "waterscene/background/reef.png");
+    asset_plugin.add_asset::<Image>("watertop", "waterscene/background/watertop.png");
 
     asset_plugin.add_asset::<Image>("sand", "platforms/sand.png");
     asset_plugin.add_asset::<Image>("walls", "walls/walls.png");

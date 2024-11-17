@@ -49,5 +49,21 @@ fn spawn_background_layers (
                 offset: Vec2::new(1000.0 * (i as f32), -220.0),
             },
         ));
+        commands.spawn((
+            SpriteBundle {
+                texture: loaded_assets.get_typed::<Image>("watertop").unwrap(),
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(375.0, 150.0)),
+                    ..default()
+                },
+                transform: Transform::from_translation(Vec3::new(0.0, 0.0, BACKGROUND_Z + 0.5)),
+                ..default()
+            },
+            ParallaxLayer {
+                speed_x: -10.0,
+                speed_y: -0.5,
+                offset: Vec2::new(375.0 * (i as f32), 300.0),
+            },
+        ));
     }
 }
