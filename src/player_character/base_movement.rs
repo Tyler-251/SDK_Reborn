@@ -13,8 +13,6 @@ impl Plugin for BaseMovementPlugin {
 }
 
 fn control_squid (
-    mut commands: Commands,
-    mut images: ResMut<Assets<Image>>,
     mut player_query: Query<(&mut Player, &mut Velocity, &mut GravityScale, &mut PlayerAnimation, &Transform)>,
     mut splotch_registry: ResMut<SplotchRegistry>,
     input: Res<ButtonInput<KeyCode>>,
@@ -110,8 +108,6 @@ fn manage_dash (
     input_stack: ResMut<InputStack>,
     mut player_query: Query<(&mut Velocity, &mut GravityScale, &mut PlayerAnimation, &Transform), With<Player>>,
     mut dash_timer: ResMut<DashTimer>,
-    mut commands: Commands,
-    mut images: ResMut<Assets<Image>>,
     mut splotch_registry: ResMut<SplotchRegistry>
 ) {
     let last_two_inputs = input_stack.into_inner().stack.iter().rev().take(2).collect::<Vec<&(InputDirection, Instant)>>();

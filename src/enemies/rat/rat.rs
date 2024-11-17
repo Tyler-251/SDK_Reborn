@@ -1,4 +1,4 @@
-#[allow(unused)]
+#[allow(unused, unused_imports, unused_mut, unused_variables)]
 
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
