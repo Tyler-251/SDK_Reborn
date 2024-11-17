@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy::render::texture::ImagePlugin;
 use bevy_rapier2d::prelude::*;
-use bevy_modern_pixel_camera::prelude::*;
 
 pub mod flex_load;
 use flex_load::*;
@@ -15,6 +14,7 @@ use objects::knife_holder::*;
 pub mod scenes;
 use scenes::background::*;
 use scenes::*;
+use scenes::water_scene::*;
 
 pub mod enemies;
 // use enemies::rat::*;
@@ -32,6 +32,9 @@ fn main() {
     asset_plugin.add_asset::<Image>("knife", "knife/knife.png");
     asset_plugin.add_asset::<Image>("small_knife", "knife/smallknife.png");
 
+    asset_plugin.add_asset::<Image>("background", "waterscene/background/background.png");
+    asset_plugin.add_asset::<Image>("reef", "waterscene/background/reef.png");
+
     asset_plugin.add_asset::<Image>("sand", "platforms/sand.png");
     asset_plugin.add_asset::<Image>("walls", "walls/walls.png");
     asset_plugin.add_asset::<Image>("knife_holder_base", "knife/knife_holder/knife_holder_base.png");
@@ -44,32 +47,10 @@ fn main() {
         DefaultPlugins.set(ImagePlugin::default_nearest()), 
         asset_plugin, 
         RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(64.0), 
-        RapierDebugRenderPlugin::default(),
+        // RapierDebugRenderPlugin::default(),
         SquidPlugin,
-        KnifePlugin,
-        BackgroundPlugin,
+        WaterScenePlugin,
         // RatPlugin
     ));
-    app.add_systems(OnEnter(AssetLoadState::Ready), make_platform);
     app.run();
-}
-
-fn make_platform (
-    mut commands: Commands,
-    loaded: Res<LoadedAssets>,
-) {
-    commands.spawn((
-        SpriteBundle {
-            texture: loaded.get_typed::<Image>("sand").unwrap(),
-            transform: Transform::from_translation(Vec3::new(0.0, -200.0, PLATFORM_Z)),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(256.0, 64.0)),
-                ..Default::default()
-            },
-            ..Default::default()
-        },
-        RigidBody::Fixed,
-        Collider::cuboid(128., 32.),
-        Platform::SOLID,
-    ));
 }

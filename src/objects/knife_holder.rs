@@ -90,7 +90,7 @@ fn tick_knife_holders (
     // knife behavior
     for (mut knife_velocity, mut knife_struct, knife_transform, knife_global, knife_entity) in knife_query.iter_mut() {
         if knife_struct.ttl <= 0.0 {
-            commands.entity(knife_entity).despawn();
+            commands.entity(knife_entity).despawn_recursive();
         } else {
             knife_struct.ttl -= time.delta_seconds();
         }

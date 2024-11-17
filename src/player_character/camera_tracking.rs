@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_rapier2d::plugin::PhysicsSet;
 use crate::player_character::*;
 use crate::flex_load::*;
 
@@ -6,7 +7,13 @@ pub struct CameraTrackingPlugin;
 
 impl Plugin for CameraTrackingPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, update_camera_tracking.run_if(in_state(AssetLoadState::Ready)));
+        app.add_systems(
+            PostUpdate, 
+            update_camera_tracking
+                .run_if(in_state(AssetLoadState::Ready))
+                .after(PhysicsSet::Writeback)
+                .before(TransformSystem::TransformPropagate)
+        );
     }
 }
 

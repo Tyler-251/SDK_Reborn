@@ -1,7 +1,8 @@
-use bevy::{prelude::*, transform::commands};
+use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::time::{Duration, Instant};
 use crate::{player_character::*, scenes::*};
+use rand::*;
 pub struct BaseMovementPlugin;
 
 impl Plugin for BaseMovementPlugin {
@@ -12,9 +13,8 @@ impl Plugin for BaseMovementPlugin {
 }
 
 fn control_squid (
-    mut commands: Commands,
-    mut images: ResMut<Assets<Image>>,
     mut player_query: Query<(&mut Player, &mut Velocity, &mut GravityScale, &mut PlayerAnimation, &Transform)>,
+    mut splotch_registry: ResMut<SplotchRegistry>,
     input: Res<ButtonInput<KeyCode>>,
     dash_timer: Res<DashTimer>,
     time: Res<Time>,
@@ -64,12 +64,7 @@ fn control_squid (
         velocity.linvel.y = 300.0;
         player_struct.has_jump = false;
         player_struct.grounded = false;
-        spawn_splotch(
-            &mut commands,
-            64, 
-            player_transform.translation.xy() + Vec2::new(0.0, -20.0),
-            images
-        );
+        spawn_splotch(&mut splotch_registry, 50, player_transform.translation.xy() + Vec2::new(0.0, -20.0));
     }
 
     if input.pressed(KeyCode::Space) && velocity.linvel.y > 0.0 {
@@ -113,8 +108,7 @@ fn manage_dash (
     input_stack: ResMut<InputStack>,
     mut player_query: Query<(&mut Velocity, &mut GravityScale, &mut PlayerAnimation, &Transform), With<Player>>,
     mut dash_timer: ResMut<DashTimer>,
-    mut commands: Commands,
-    mut images: ResMut<Assets<Image>>
+    mut splotch_registry: ResMut<SplotchRegistry>
 ) {
     let last_two_inputs = input_stack.into_inner().stack.iter().rev().take(2).collect::<Vec<&(InputDirection, Instant)>>();
     if last_two_inputs.len() != 2 {return}
@@ -129,12 +123,7 @@ fn manage_dash (
                     player_query.single_mut().0.linvel.x = -500.0;
                     dash_timer.timer.reset();
                     dash_timer.direction = InputDirection::Left;
-                    spawn_splotch(
-                        &mut commands,
-                        64, 
-                        player_query.single().3.translation.xy() + Vec2::new(0.0, -20.0),
-                        images
-                    );
+                    spawn_splotch_cluster(&mut splotch_registry, 60, player_query.single_mut().3.translation.xy() + Vec2::new(10.0, -10.0));
                 }
             }
             InputDirection::Right => {
@@ -142,12 +131,7 @@ fn manage_dash (
                     player_query.single_mut().0.linvel.x = 500.0;
                     dash_timer.timer.reset();
                     dash_timer.direction = InputDirection::Right;
-                    spawn_splotch(
-                        &mut commands,
-                        100, 
-                        player_query.single().3.translation.xy() + Vec2::new(0.0, -20.0),
-                        images
-                    );
+                    spawn_splotch_cluster(&mut splotch_registry, 60, player_query.single_mut().3.translation.xy() + Vec2::new(-10.0, -10.0));
                 }
             }
             InputDirection::Up => {
@@ -155,11 +139,7 @@ fn manage_dash (
                     player_query.single_mut().0.linvel.y = 500.0;
                     dash_timer.timer.reset();
                     dash_timer.direction = InputDirection::Up;
-                    spawn_splotch(
-                        &mut commands,
-                        1000, 
-                        player_query.single().3.translation.xy() + Vec2::new(0.0, -20.0),                    images
-                    );
+                    spawn_splotch_cluster(&mut splotch_registry, 60, player_query.single_mut().3.translation.xy() + Vec2::new(0.0, -20.0));
                 }
             }
             InputDirection::Down => {
@@ -167,11 +147,7 @@ fn manage_dash (
                     player_query.single_mut().0.linvel.y = -800.0;
                     dash_timer.timer.reset();
                     dash_timer.direction = InputDirection::Down;
-                    spawn_splotch(
-                        &mut commands,
-                        100, 
-                        player_query.single().3.translation.xy() + Vec2::new(0.0, -20.0),                    images
-                    );
+                    spawn_splotch_cluster(&mut splotch_registry, 60, player_query.single_mut().3.translation.xy() + Vec2::new(0.0, -20.0));
                 }
             }
             
@@ -203,6 +179,18 @@ impl DashTimer {
 fn tick_dash_timer (
     mut dash_timer: ResMut<DashTimer>,
     time: Res<Time>,
+    mut splotch_registry: ResMut<SplotchRegistry>,
+    player_query: Query<&Transform, With<Player>>
 ) {
     dash_timer.timer.tick(time.delta());
+    for transform in player_query.iter() {
+        let mut rng = rand::thread_rng();
+        if dash_timer.timer.elapsed().as_secs_f32() < 0.25 && !dash_timer.timer.finished() && rng.gen_range(0..=6) == 0 {
+            spawn_splotch(
+                &mut splotch_registry, 
+                45 - (dash_timer.timer.elapsed().as_secs_f32() * 120.0) as usize, 
+                transform.translation.xy()
+            );
+        }
+    }
 }
