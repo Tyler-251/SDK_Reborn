@@ -61,7 +61,7 @@ fn spawn_background_layers (
             },
             ParallaxLayer {
                 speed_x: -10.0,
-                speed_y: -0.5,
+                speed_y: 0.0,
                 offset: Vec2::new(375.0 * (i as f32), 300.0),
             },
         ));
