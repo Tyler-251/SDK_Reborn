@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{asset, prelude::*};
 use bevy::render::texture::ImagePlugin;
 use bevy_rapier2d::prelude::*;
 
@@ -35,6 +35,8 @@ fn main() {
     asset_plugin.add_asset::<Image>("background", "waterscene/background/background.png");
     asset_plugin.add_asset::<Image>("reef", "waterscene/background/reef.png");
     asset_plugin.add_asset::<Image>("watertop", "waterscene/background/watertop.png");
+    asset_plugin.add_asset::<Image>("reef_far", "waterscene/background/far_coral.png");
+    asset_plugin.add_asset::<Image>("light_beams", "waterscene/background/light_beams.png");
 
     asset_plugin.add_asset::<Image>("sand", "platforms/sand.png");
     asset_plugin.add_asset::<Image>("walls", "walls/walls.png");
