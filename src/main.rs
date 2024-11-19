@@ -1,4 +1,4 @@
-use bevy::{asset, prelude::*};
+use bevy::prelude::*;
 use bevy::render::texture::ImagePlugin;
 use bevy_rapier2d::prelude::*;
 
