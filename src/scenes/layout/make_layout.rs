@@ -12,7 +12,7 @@ impl Plugin for LayoutPlugin {
     }
 }
 
-#[derive(Resource)]
+#[derive(Resource, Clone)]
 pub struct Layout {
     pub rooms: Vec<Room>,
 }
@@ -30,6 +30,17 @@ impl Layout {
         }
         return dimensions;
     }
+    pub fn get_adjacent_rooms(&self, room: &Room) -> Vec<Room> {
+        let mut adjacent_rooms = vec![];
+        for other_room in &self.rooms {
+            if room.macro_position == other_room.macro_position {continue;}
+            if room.macro_position == other_room.macro_position + IVec2::new(0, 1) {adjacent_rooms.push(other_room.clone());}
+            if room.macro_position == other_room.macro_position + IVec2::new(1, 0) {adjacent_rooms.push(other_room.clone());}
+            if room.macro_position == other_room.macro_position + IVec2::new(0, -1) {adjacent_rooms.push(other_room.clone());}
+            if room.macro_position == other_room.macro_position + IVec2::new(-1, 0) {adjacent_rooms.push(other_room.clone());}
+        }
+        return adjacent_rooms;
+    }
 }
 
 fn generate_rooms (
@@ -43,19 +54,22 @@ fn generate_rooms (
             doors: vec![]
         }
     );
-
+    let room_count = 10;
     let mut rng = rand::thread_rng();
     let starting_room = layout.rooms.get(rng.gen_range(0..layout.rooms.len())).unwrap();
     let mut active_room = starting_room.clone();
-    for i in 0..10 {
-        println!("Placing room {}", i);
+    for i in 0..room_count {
+        // println!("Placing room {}", i);
         let mut valid_placement = false; 
         let mut counter = 0;
         while !valid_placement { //todo: better way to iterate through directions than random every loop
             valid_placement = true;
             let new_position: IVec2;
 
-            if counter > 10 {panic!("Could not place room after 10 attempts");}
+            if counter > 10 {
+                active_room = layout.rooms.get(rng.gen_range(0..layout.rooms.len())).unwrap().clone(); //switch to diff room
+                println!("Switching to room at {:?}", active_room.macro_position);
+            }
 
             let direction_index = rng.gen_range(0..4);
             let direction: IVec2;
@@ -92,26 +106,119 @@ fn generate_rooms (
                 };
                 active_room = new_room.clone();
     
-                layout.rooms.insert(
-                    i+1,
+                layout.rooms.push(
                     new_room.clone()
                 );
             }
             counter += 1;              
         }
-
+        if i == room_count / 3 {
+            build_branch(&mut layout, &active_room, 3);
+        }
+        if i == (room_count * 2) / 3 {
+            build_branch(&mut layout, &active_room, 5);
+        }
+        if i == room_count - 1 {
+            //make boss room
+        }
     }
-
+    add_extra_doors(&mut layout);
 }
 
+fn build_branch (
+    layout: &mut ResMut<Layout>,
+    starting_room: &Room,
+    branch_length: i32
+) {
+    let mut rng = rand::thread_rng();
+    let mut active_room = starting_room.clone();
+    for i in 0..branch_length {
+        // println!("Placing room {}", i);
+        let mut valid_placement = false; 
+        let mut counter = 0;
+        while !valid_placement { //todo: better way to iterate through directions than random every loop
+            valid_placement = true;
+            let new_position: IVec2;
 
+            if counter > 10 {
+                active_room = layout.rooms.get(rng.gen_range(0..layout.rooms.len())).unwrap().clone(); //switch to diff room
+                println!("Switching to room at {:?}", active_room.macro_position);
+            }
+
+            let direction_index = rng.gen_range(0..4);
+            let direction: IVec2;
+            if direction_index == 0 {direction =  IVec2::new(0, 1);}  //up
+            else if direction_index == 1 {direction =  IVec2::new(1, 0);}  //right
+            else if direction_index == 2 {direction =  IVec2::new(0, -1);}  //down
+            else {direction =  IVec2::new(-1, 0);}  //left
+
+            new_position = active_room.macro_position + direction;
+            
+            for position in layout.get_populated_dimensions() {  //check for overlaps
+                if position == new_position {
+                    valid_placement = false;
+                }
+            }
+
+            if valid_placement {
+                let door_direction: DoorDirection;
+                match direction_index {
+                    2 => door_direction = DoorDirection::Up,
+                    3 => door_direction = DoorDirection::Right,
+                    0 => door_direction = DoorDirection::Down,
+                    1 => door_direction = DoorDirection::Left,
+                    _ => panic!("Invalid door direction")
+                }
+
+                let new_room = Room {
+                    macro_position: new_position,
+                    dimensions: vec![IVec2::new(0, 0)],
+                    doors: vec![Door {
+                        position: IVec2::new(0, 0),
+                        direction: door_direction
+                    }]
+                };
+                active_room = new_room.clone();
+                
+                layout.rooms.push(
+                    new_room.clone()
+                );
+            }
+            counter += 1;              
+        }
+    }
+}
+
+fn add_extra_doors (
+    layout: &mut ResMut<Layout>
+) {
+    let adjacent_rooms_list: Vec<Vec<Room>> = layout.rooms.iter().map(|room| layout.get_adjacent_rooms(room)).collect();
+    for (room, adjacent_rooms) in layout.rooms.iter_mut().zip(adjacent_rooms_list) {
+        if adjacent_rooms.len() == 0 {continue;}
+        for adjacent_room in adjacent_rooms {
+            let mut door_direction: DoorDirection = DoorDirection::Up;
+            if adjacent_room.macro_position == room.macro_position + IVec2::new(0, 1) {door_direction = DoorDirection::Up;}
+            if adjacent_room.macro_position == room.macro_position + IVec2::new(1, 0) {door_direction = DoorDirection::Right;}
+            if adjacent_room.macro_position == room.macro_position + IVec2::new(0, -1) {door_direction = DoorDirection::Down;}
+            if adjacent_room.macro_position == room.macro_position + IVec2::new(-1, 0) {door_direction = DoorDirection::Left;}
+            let mut rng = rand::thread_rng();
+            if rng.gen_range(0..4) == 0 {
+                println!("Adding extra door");
+                room.doors.push(Door {
+                    position: IVec2::new(0, 0),
+                    direction: door_direction
+                });
+            }
+        }
+    }
+}
 
 fn spawn_placeholders (
     mut commands: Commands,
     layout: Res<Layout>,
 ) {
     for room in &layout.rooms {
-        println!("room at {:?}", room.macro_position);
+        // println!("room at {:?}", room.macro_position);
         commands.spawn(
             SpriteBundle {
                 // texture: loaded_assets.get_typed::<Image>("placeholder").unwrap(),
@@ -126,25 +233,27 @@ fn spawn_placeholders (
         );
 
         if room.doors.len() == 0 {continue;}
-        let door_position: Vec2;
-        match room.doors[0].direction {
-            DoorDirection::Up => door_position = Vec2::new(0.0, 50.0),
-            DoorDirection::Down => door_position = Vec2::new(0.0, -50.0),
-            DoorDirection::Left => door_position = Vec2::new(-50.0, 0.0),
-            DoorDirection::Right => door_position = Vec2::new(50.0, 0.0),
-        }
-
-        commands.spawn(
-            SpriteBundle {
-                // texture: loaded_assets.get_typed::<Image>("placeholder").unwrap(),
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(10.0, 10.0)),
-                    color: Color::srgba(1.0, 0.0, 0.0, 0.5),
-                    ..default()
-                },
-                transform: Transform::from_translation((room.macro_position.extend(0).as_vec3() * 105.0) + door_position.extend(0.0)),
-                ..default()
+        for door in room.doors.clone() {
+            let door_position: Vec2;
+            match door.direction {
+                DoorDirection::Up => door_position = Vec2::new(0.0, 50.0),
+                DoorDirection::Down => door_position = Vec2::new(0.0, -50.0),
+                DoorDirection::Left => door_position = Vec2::new(-50.0, 0.0),
+                DoorDirection::Right => door_position = Vec2::new(50.0, 0.0),
             }
-        );
+    
+            commands.spawn(
+                SpriteBundle {
+                    // texture: loaded_assets.get_typed::<Image>("placeholder").unwrap(),
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::new(10.0, 10.0)),
+                        color: Color::srgba(1.0, 0.0, 0.0, 0.5),
+                        ..default()
+                    },
+                    transform: Transform::from_translation((room.macro_position.extend(0).as_vec3() * 105.0) + door_position.extend(0.0)),
+                    ..default()
+                }
+            );
+        }
     }
 }
