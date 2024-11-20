@@ -1,4 +1,4 @@
-use bevy::{prelude::*, transform::commands};
+use bevy::{color, prelude::*, transform::commands};
 use crate::flex_load::*;
 use super::room::*;
 use rand::*;
@@ -14,7 +14,7 @@ impl Plugin for LayoutPlugin {
 
 #[derive(Resource, Clone)]
 pub struct Layout {
-    pub rooms: Vec<Room>,
+    pub rooms: Vec<Simple_Room>,
 }
 
 impl Layout {
@@ -30,7 +30,7 @@ impl Layout {
         }
         return dimensions;
     }
-    pub fn get_adjacent_rooms(&self, room: &Room) -> Vec<Room> {
+    pub fn get_adjacent_rooms(&self, room: &Simple_Room) -> Vec<Simple_Room> {
         let mut adjacent_rooms = vec![];
         for other_room in &self.rooms {
             if room.macro_position == other_room.macro_position {continue;}
@@ -48,7 +48,8 @@ fn generate_rooms (
 ) {
     layout.rooms.insert(
         0,
-        Room {
+        Simple_Room {
+            room_type: RoomType::Spawn,
             macro_position: IVec2::new(0, 0),
             dimensions: vec![IVec2::new(0, 0)],
             doors: vec![]
@@ -96,7 +97,8 @@ fn generate_rooms (
                     _ => panic!("Invalid door direction")
                 }
 
-                let new_room = Room {
+                let mut new_room = Simple_Room {
+                    room_type: RoomType::Enemy,
                     macro_position: new_position,
                     dimensions: vec![IVec2::new(0, 0)],
                     doors: vec![Door {
@@ -105,6 +107,10 @@ fn generate_rooms (
                     }]
                 };
                 active_room = new_room.clone();
+
+                if i == room_count - 1 {
+                    new_room.room_type = RoomType::Boss;
+                }
     
                 layout.rooms.push(
                     new_room.clone()
@@ -118,16 +124,14 @@ fn generate_rooms (
         if i == (room_count * 2) / 3 {
             build_branch(&mut layout, &active_room, 5);
         }
-        if i == room_count - 1 {
-            //make boss room
-        }
+
     }
     add_extra_doors(&mut layout);
 }
 
 fn build_branch (
     layout: &mut ResMut<Layout>,
-    starting_room: &Room,
+    starting_room: &Simple_Room,
     branch_length: i32
 ) {
     let mut rng = rand::thread_rng();
@@ -170,7 +174,8 @@ fn build_branch (
                     _ => panic!("Invalid door direction")
                 }
 
-                let new_room = Room {
+                let new_room = Simple_Room {
+                    room_type: RoomType::Enemy,
                     macro_position: new_position,
                     dimensions: vec![IVec2::new(0, 0)],
                     doors: vec![Door {
@@ -192,7 +197,7 @@ fn build_branch (
 fn add_extra_doors (
     layout: &mut ResMut<Layout>
 ) {
-    let adjacent_rooms_list: Vec<Vec<Room>> = layout.rooms.iter().map(|room| layout.get_adjacent_rooms(room)).collect();
+    let adjacent_rooms_list: Vec<Vec<Simple_Room>> = layout.rooms.iter().map(|room| layout.get_adjacent_rooms(room)).collect();
     for (room, adjacent_rooms) in layout.rooms.iter_mut().zip(adjacent_rooms_list) {
         if adjacent_rooms.len() == 0 {continue;}
         for adjacent_room in adjacent_rooms {
@@ -218,13 +223,21 @@ fn spawn_placeholders (
     layout: Res<Layout>,
 ) {
     for room in &layout.rooms {
+        let color: Color;
+        match room.room_type {
+            RoomType::Spawn => color = Color::srgba(0.0, 1.0, 0.0, 0.5),
+            RoomType::Enemy => color = Color::srgba(1.0, 0.0, 0.0, 0.5),
+            RoomType::Treasure => color = Color::srgba(1.0, 1.0, 0.0, 0.5),
+            RoomType::Shop => color = Color::srgba(0.0, 1.0, 1.0, 0.5),
+            RoomType::Boss => color = Color::srgba(1.0, 0.0, 1.0, 0.5),
+        }
         // println!("room at {:?}", room.macro_position);
         commands.spawn(
             SpriteBundle {
                 // texture: loaded_assets.get_typed::<Image>("placeholder").unwrap(),
                 sprite: Sprite {
                     custom_size: Some(Vec2::new(100.0, 100.0)),
-                    color: Color::srgba(1.0, 1.0, 1.0, 0.1),
+                    color,
                     ..default()
                 },
                 transform: Transform::from_translation(room.macro_position.extend(0).as_vec3() * 105.0),
@@ -244,10 +257,9 @@ fn spawn_placeholders (
     
             commands.spawn(
                 SpriteBundle {
-                    // texture: loaded_assets.get_typed::<Image>("placeholder").unwrap(),
                     sprite: Sprite {
                         custom_size: Some(Vec2::new(10.0, 10.0)),
-                        color: Color::srgba(1.0, 0.0, 0.0, 0.5),
+                        color: Color::srgba(1.0, 1.0, 1.0, 0.5),
                         ..default()
                     },
                     transform: Transform::from_translation((room.macro_position.extend(0).as_vec3() * 105.0) + door_position.extend(0.0)),

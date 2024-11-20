@@ -1,5 +1,7 @@
 pub mod room;
-pub mod make_layout;
+pub mod make_simple_layout;
+pub mod make_complex_layout;
 
-pub use make_layout::*;
+pub use make_simple_layout::*;
+pub use make_complex_layout::*;
 pub use room::*;

@@ -16,7 +16,7 @@ pub mod scenes;
 use scenes::background::*;
 use scenes::*;
 use scenes::water_scene::*;
-use layout::LayoutPlugin;
+use layout::{ComplexLayoutPlugin, LayoutPlugin};
 
 
 pub mod enemies;
@@ -33,7 +33,7 @@ fn main() {
         LoadedAssetsPlugin, // see asset_registry.rs
         RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(64.0), 
         // RapierDebugRenderPlugin::default(), // physics colliders debug rendering
-        LayoutPlugin,
+        ComplexLayoutPlugin,
         SquidPlugin,
         WaterScenePlugin,
     ));
