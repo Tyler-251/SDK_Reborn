@@ -16,7 +16,7 @@ pub mod scenes;
 use scenes::background::*;
 use scenes::*;
 use scenes::water_scene::*;
-use layout::{ComplexLayoutPlugin, LayoutPlugin};
+use layout::ComplexLayoutPlugin;
 
 
 pub mod enemies;
