@@ -2,20 +2,20 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use crate::{flex_load::*, PLAYER_Z};
 use crate::player_character::*;
-use bevy_modern_pixel_camera::prelude::*;
 
 pub struct SquidPlugin;
 
 impl Plugin for SquidPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((PixelCameraPlugin, PlayerUIPlugin, CameraTrackingPlugin, BaseMovementPlugin, PlayerAnimationPlugin, InkPlugin));
+        app.add_plugins((PlayerUIPlugin, CameraTrackingPlugin, BaseMovementPlugin, PlayerAnimationPlugin, InkPlugin));
         app.insert_resource(InputStack::new());
         app.add_systems(OnEnter(AssetLoadState::Ready), spawn_squid);
         app.add_systems(Update, track_input.run_if(in_state(AssetLoadState::Ready)));
     }
 }
 
-#[derive(Component)] 
+#[derive(Component, Default)] 
+#[require(Sprite, PlayerAnimation)]
 pub struct Player {
     pub grounded: bool,
     pub has_jump: bool,
@@ -33,7 +33,7 @@ impl Player {
 }
 
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Health {
     pub health: f32,
     pub max_health: f32,
@@ -72,33 +72,9 @@ fn spawn_squid (
         TextureAtlasLayout::from_grid(UVec2::splat(32), 4, 4, None, None)
     );
     
-    commands.spawn((
-        SpriteBundle {
-            texture: loaded.get_typed::<Image>("squid_map").unwrap(),
-            transform: Transform::from_translation(Vec3::new(0.0, 0.0, PLAYER_Z)),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(64.0, 64.0)),
-                ..Default::default()
-            },
-            ..Default::default()
-        },
-        TextureAtlas {
-            layout: squid_map_layout.clone(),
-            index: 4,
-        },
-        PlayerAnimation::default(),
-        RigidBody::Dynamic,
-        Collider::capsule_y(3., 20.),
-        ActiveEvents::COLLISION_EVENTS,
-        Velocity::default(),
-        GravityScale(1.0),
-        Friction {
-            coefficient: 0.5,
-            ..default()
-        },
-        LockedAxes::ROTATION_LOCKED,
-        Player::new(),
-    )).with_children(|parent| {
+    commands.spawn( 
+        Player::default()
+    ).with_children(|parent| {
         parent.spawn((
             SpriteBundle {
                 texture: loaded.get_typed_clone::<Image>("squid_map").unwrap(),
@@ -128,3 +104,69 @@ fn spawn_squid (
         PixelViewport
     ));
 }
+
+// fn spawn_squid (
+//     mut commands: Commands,
+//     loaded: Res<LoadedAssets>,
+//     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+// ) {
+//     let squid_map_layout = texture_atlas_layouts.add(
+//         TextureAtlasLayout::from_grid(UVec2::splat(32), 4, 4, None, None)
+//     );
+    
+//     commands.spawn((
+//         SpriteBundle {
+//             texture: loaded.get_typed::<Image>("squid_map").unwrap(),
+//             transform: Transform::from_translation(Vec3::new(0.0, 0.0, PLAYER_Z)),
+//             sprite: Sprite {
+//                 custom_size: Some(Vec2::new(64.0, 64.0)),
+//                 ..Default::default()
+//             },
+//             ..Default::default()
+//         },
+//         TextureAtlas {
+//             layout: squid_map_layout.clone(),
+//             index: 4,
+//         },
+//         PlayerAnimation::default(),
+//         RigidBody::Dynamic,
+//         Collider::capsule_y(3., 20.),
+//         ActiveEvents::COLLISION_EVENTS,
+//         Velocity::default(),
+//         GravityScale(1.0),
+//         Friction {
+//             coefficient: 0.5,
+//             ..default()
+//         },
+//         LockedAxes::ROTATION_LOCKED,
+//         Player::new(),
+//     )).with_children(|parent| {
+//         parent.spawn((
+//             SpriteBundle {
+//                 texture: loaded.get_typed_clone::<Image>("squid_map").unwrap(),
+//                 transform: Transform::from_translation(Vec3::new(0.0, 0.0, -0.1)), //just behind squid head
+//                 sprite: Sprite {
+//                     custom_size: Some(Vec2::new(64.0, 64.0)),
+//                     ..Default::default()
+//                 },
+//                 ..Default::default()
+//             },
+//             TextureAtlas {
+//                 layout: squid_map_layout.clone(),
+//                 index: 2,
+//             },
+//         ));
+//         parent.spawn((
+//             Name::new("feet"),
+//             Transform::from_translation(Vec3::new(0.0, -10.0, 0.0)),
+//             Collider::ball(16.),
+//             Sensor,
+//             ActiveEvents::COLLISION_EVENTS,
+//         ));
+//     });
+//     commands.spawn((
+//         Camera2dBundle::default(),
+//         PixelZoom::FitSize { width: 1280, height: 720 },
+//         PixelViewport
+//     ));
+// }
