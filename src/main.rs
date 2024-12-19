@@ -13,6 +13,7 @@ pub mod objects;
 use objects::knife_holder::*;
 
 pub mod scenes;
+use rat::RatPlugin;
 use scenes::background::*;
 use scenes::*;
 use scenes::water_scene::*;
@@ -33,9 +34,10 @@ fn main() {
         LoadedAssetsPlugin, // see asset_registry.rs
         RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(64.0), 
         // RapierDebugRenderPlugin::default(), // physics colliders debug rendering
-        ComplexLayoutPlugin,
+       // ComplexLayoutPlugin,
         SquidPlugin,
         WaterScenePlugin,
+        RatPlugin,
     ));
     app.run();
 }
