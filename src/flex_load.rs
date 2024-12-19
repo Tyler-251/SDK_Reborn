@@ -103,8 +103,8 @@ fn verify_load (
     asset_server: Res<AssetServer>,
     mut next_state: ResMut<NextState<AssetLoadState>>
 ) {
-    let all_loaded = loaded_assets.asset_map.values().all(|handle| asset_server.get_load_state(handle.id()) == Some(LoadState::Loaded));
-    loaded_assets.count_loaded = loaded_assets.asset_map.values().filter(|handle| asset_server.get_load_state(handle.id()) == Some(LoadState::Loaded)).count();
+    let all_loaded = loaded_assets.asset_map.values().all(|handle| matches!(asset_server.get_load_state(handle.id()), Some(LoadState::Loaded)));
+    loaded_assets.count_loaded = loaded_assets.asset_map.values().filter(|handle| matches!(asset_server.get_load_state(handle.id()), Some(LoadState::Loaded))).count();
     if all_loaded {
         next_state.set(AssetLoadState::Ready);
     }

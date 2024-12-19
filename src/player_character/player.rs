@@ -72,24 +72,42 @@ fn spawn_squid (
         TextureAtlasLayout::from_grid(UVec2::splat(32), 4, 4, None, None)
     );
     
-    commands.spawn( 
-        Player::default()
-    ).with_children(|parent| {
-        parent.spawn((
-            SpriteBundle {
-                texture: loaded.get_typed_clone::<Image>("squid_map").unwrap(),
-                transform: Transform::from_translation(Vec3::new(0.0, 0.0, -0.1)), //just behind squid head
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(64.0, 64.0)),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-            TextureAtlas {
-                layout: squid_map_layout.clone(),
-                index: 2,
-            },
-        ));
+    commands.spawn((
+        Sprite {
+            image: loaded.get_typed_clone::<Image>("squid_map").unwrap(),
+            custom_size: Some(Vec2::new(64.0, 64.0)),
+            texture_atlas: 
+                Some( TextureAtlas {
+                    layout: squid_map_layout.clone(),
+                    index: 4,
+                }),
+            ..default()
+        },
+        PlayerAnimation::default(),
+        RigidBody::Dynamic,
+        Collider::capsule_y(3., 20.),
+        ActiveEvents::COLLISION_EVENTS,
+        Velocity::default(),
+        GravityScale(1.0),
+        Friction {
+            coefficient: 0.5,
+            ..default()
+        },
+        LockedAxes::ROTATION_LOCKED,
+        Player::new(),
+    )).with_children(|parent| {
+        parent.spawn(
+            Sprite {
+                image: loaded.get_typed_clone::<Image>("squid_map").unwrap(),
+                custom_size: Some(Vec2::new(64.0, 64.0)),
+                texture_atlas: 
+                    Some( TextureAtlas {
+                        layout: squid_map_layout.clone(),
+                        index: 2,
+                    }),
+                ..default()
+            }
+        );
         parent.spawn((
             Name::new("feet"),
             Transform::from_translation(Vec3::new(0.0, -10.0, 0.0)),
@@ -98,11 +116,9 @@ fn spawn_squid (
             ActiveEvents::COLLISION_EVENTS,
         ));
     });
-    commands.spawn((
-        Camera2dBundle::default(),
-        PixelZoom::FitSize { width: 1280, height: 720 },
-        PixelViewport
-    ));
+    commands.spawn(
+        Camera2d
+    );
 }
 
 // fn spawn_squid (

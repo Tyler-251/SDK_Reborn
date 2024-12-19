@@ -20,7 +20,7 @@ use layout::ComplexLayoutPlugin;
 
 
 pub mod enemies;
-// use enemies::rat::*;
+use enemies::rat::*;
 
 static BACKGROUND_Z: f32 = -100.0;
 static PLATFORM_Z: f32 = -50.0;

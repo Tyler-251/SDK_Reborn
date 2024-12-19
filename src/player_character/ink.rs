@@ -121,15 +121,12 @@ pub fn manage_spawns (
         let splotch_image = images.add(splotch_image);
 
         commands.spawn((
-            SpriteBundle {
-                texture: splotch_image.clone(),
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(size as f32, size as f32)),
-                    ..Default::default()
-                },
-                transform: Transform::from_translation(splotch.position.extend(0.0)),
-                ..Default::default()
+            Sprite {
+                image: splotch_image.clone(),
+                custom_size: Some(Vec2::new(size as f32, size as f32)),
+                ..default()
             },
+            Transform::from_translation(splotch.position.extend(0.0)),
             Splotch {
                 size,
                 timer: Timer::from_seconds(1., TimerMode::Repeating),

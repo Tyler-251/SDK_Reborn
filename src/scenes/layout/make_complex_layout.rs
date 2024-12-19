@@ -1,3 +1,5 @@
+use core::panic;
+
 use bevy::prelude::*;
 use rand::*;
 use super::complex_layout::*;
@@ -227,10 +229,8 @@ pub fn generate (
             };
         }
     }
+
     let mut rng = rand::thread_rng();
-    let shop_room_count = 1;
-    let treasure_room_count = 3;
-    let max_rooms = 15 + shop_room_count + treasure_room_count;
     let spawn = ComplexRoom {
         chunks: vec![IVec2::new(0, 0)],
         doors: vec![],
@@ -238,45 +238,78 @@ pub fn generate (
     };
     let mut active_room = spawn.clone();
     layout.rooms.push(spawn);
-    while layout.rooms.len() < max_rooms {
+
+    let mut room_pool = RoomPool::new();
+    {
+        room_pool.push(ComplexRoomType::Enemy, 12);
+        room_pool.push(ComplexRoomType::Shop, 1); 
+        room_pool.push(ComplexRoomType::Treasure, rng.gen_range(1..=3));
+        room_pool.push(ComplexRoomType::Boss, 1);
+    }
+    let max_rooms = room_pool.len() + 1;  //+1 for spawn
+
+    while layout.rooms.len() < max_rooms { 
         let neighbors = active_room.all_neighboring_chunks();
 
         let valid_placements = neighbors.iter().filter(|&neighbor| {
             layout.chunk_to_room(*neighbor).is_none()
         }).collect::<Vec<_>>();
 
-        if valid_placements.len() == 0 { // if room is blocked in, pick a new room and start over
+        if valid_placements.len() == 0 {  //if room is blocked in, pick a new room and start over
             active_room = layout.rooms[rng.gen_range(0..layout.rooms.len())].clone();
-            // println!("this should not happen often");
             continue;
         }
 
         let new_chunk = *valid_placements[rng.gen_range(0..valid_placements.len())];
         let new_room: ComplexRoom;
-        if layout.rooms.len() == max_rooms - 1 { //last room is boss room
-            new_room = generate_specific_room(new_chunk, UVec2::new(3, 2), &layout, ComplexRoomType::Boss);
-            if new_room.chunks.len() == 0 {
-                active_room = layout.rooms[rng.gen_range(0..layout.rooms.len())].clone();
-                continue;
+
+        let mut chosen_room = room_pool.fetch_random();
+        while chosen_room.0 == ComplexRoomType::Boss {  //boss room must be last
+            chosen_room = room_pool.fetch_random();
+            if layout.rooms.len() == max_rooms - 1 {
+                break;
             }
-        } else if layout.rooms.len() % (max_rooms / (shop_room_count + 1)) == 0 { //shop room
-            new_room = generate_specific_room(new_chunk, UVec2::new(2, 1), &layout, ComplexRoomType::Shop);
-            if new_room.chunks.len() == 0 {
-                active_room = layout.rooms[rng.gen_range(0..layout.rooms.len())].clone();
-                continue;
-            }
-        } else if layout.rooms.len() > max_rooms - (treasure_room_count + 2) { //add treasure rooms (todo: must be randomly spread across map)
-            new_room = generate_specific_room(new_chunk, UVec2::new(1, 1), &layout, ComplexRoomType::Treasure);
-            if new_room.chunks.len() == 0 {
-                active_room = layout.rooms[rng.gen_range(0..layout.rooms.len())].clone();
-                continue;
-            }
-        } 
-        else {
-            new_room = generate_room(new_chunk, rng.gen_range(1..=3), &layout);
         }
+
+        match chosen_room.0 {
+            ComplexRoomType::Enemy => {
+                new_room = generate_room(new_chunk, chosen_room.1, &layout);
+            },
+            ComplexRoomType::Shop => {
+                new_room = generate_specific_room(new_chunk, UVec2::new(2, 1), &layout, ComplexRoomType::Shop);
+            },
+            ComplexRoomType::Treasure => {
+                new_room = generate_specific_room(new_chunk, UVec2::new(1, 1), &layout, ComplexRoomType::Treasure);
+                let mut reset_flag = false; //check if treasure room is too close to another treasure room
+                for neighbor in new_room.all_neighboring_chunks() {
+                    if let Some(room) = layout.chunk_to_room(neighbor) {
+                        if room.room_type == ComplexRoomType::Treasure {
+                            reset_flag = true;
+                        }
+                    }
+                }
+                if reset_flag {
+                    println!("Treasure room too close to another treasure room, retrying");
+                    active_room = layout.rooms[rng.gen_range(0..layout.rooms.len())].clone();
+                    continue;
+                }
+            },
+            ComplexRoomType::Boss => {
+                new_room = generate_specific_room(new_chunk, UVec2::new(3, 2), &layout, ComplexRoomType::Boss);
+            },
+            _ => {
+                panic!("Invalid room type in room generation, check room pool");
+            }
+        }
+
+        if new_room.chunks.len() == 0 {
+            active_room = layout.rooms[rng.gen_range(0..layout.rooms.len())].clone();
+            continue;
+        }
+
         layout.rooms.push(new_room.clone());
         layout.insert_door(active_room.clone(), new_room);
+        room_pool.pop(chosen_room);
     }
     // add more doors
     for room in layout.rooms.clone().iter() {

@@ -74,14 +74,14 @@ impl PlayerAnimation {
 // 14: leg jump
 
 fn animate_squid (
-    mut player_query: Query<(&Player, &Velocity, &mut PlayerAnimation, &mut Sprite, &mut TextureAtlas, &Children)>,
-    mut sprite_query: Query<(&mut Sprite, &mut TextureAtlas), Without<Player>>,
+    mut player_query: Query<(&Player, &Velocity, &mut PlayerAnimation, &mut Sprite, &Children)>,
+    mut sprite_query: Query<&mut Sprite, Without<Player>>,
     dash_timer: Res<DashTimer>,
     time: Res<Time>,
 ) {
     if player_query.iter().count() == 0 {return}
-    let (player_struct, player_velocity, mut player_anim, mut head_sprite, mut head_atlas, player_children) = player_query.single_mut();
-    let (mut leg_sprite, mut leg_atlas) = sprite_query.get_mut(player_children[0]).unwrap();
+    let (player_struct, player_velocity, mut player_anim, mut head_sprite, player_children) = player_query.single_mut();
+    let mut leg_sprite = sprite_query.get_mut(player_children[0]).unwrap();
     player_anim.timer.tick(time.delta());
     if player_anim.timer.finished() {
         player_anim.frame += 1;
@@ -109,45 +109,45 @@ fn animate_squid (
     // animation states
     match player_anim.state {
         AnimState::Idle => {
-            head_atlas.index = 4;
-            leg_atlas.index = 2;
+            head_sprite.texture_atlas.as_mut().unwrap().index = 4;
+            leg_sprite.texture_atlas.as_mut().unwrap().index = 2;
 
             if player_anim.frame % 20 == 17 { // every 20 frames blink
-                head_atlas.index = 5;
+                head_sprite.texture_atlas.as_mut().unwrap().index = 5;
             } else if player_anim.frame % 20 == 18 {
-                head_atlas.index = 6;
+                head_sprite.texture_atlas.as_mut().unwrap().index = 6;
             } else if player_anim.frame % 20 == 19 {
-                head_atlas.index = 7;
+                head_sprite.texture_atlas.as_mut().unwrap().index = 7;
             }
         },
         AnimState::Walk => {
-            head_atlas.index = 4;
+            head_sprite.texture_atlas.as_mut().unwrap().index = 4;
 
             if player_anim.frame % 2 == 0 {
-                leg_atlas.index = 2;
+                leg_sprite.texture_atlas.as_mut().unwrap().index = 2;
             } else {
-                leg_atlas.index = 3;
+                leg_sprite.texture_atlas.as_mut().unwrap().index = 3;
             }
         },
         AnimState::Dash => {
             if dash_timer.direction == InputDirection::Left || dash_timer.direction == InputDirection::Right {
-                head_atlas.index = player_anim.frame % 2 + 9;
-                leg_atlas.index = player_anim.frame % 2 + 9;
+                head_sprite.texture_atlas.as_mut().unwrap().index = player_anim.frame % 2 + 9;
+                leg_sprite.texture_atlas.as_mut().unwrap().index = player_anim.frame % 2 + 9;
             } else if dash_timer.direction == InputDirection::Down {
-                head_atlas.index = player_anim.frame % 2 + 11;
-                leg_atlas.index = player_anim.frame % 2 + 11;
+                head_sprite.texture_atlas.as_mut().unwrap().index = player_anim.frame % 2 + 11;
+                leg_sprite.texture_atlas.as_mut().unwrap().index = player_anim.frame % 2 + 11;
             } else if dash_timer.direction == InputDirection::Up {
-                head_atlas.index = 13;
-                leg_atlas.index = 14;
+                head_sprite.texture_atlas.as_mut().unwrap().index = 13;
+                leg_sprite.texture_atlas.as_mut().unwrap().index = 14;
             }
         },
         AnimState::Fall => {
-            head_atlas.index = player_anim.frame % 2 + 11;
-            leg_atlas.index = player_anim.frame % 2 + 11;
+            head_sprite.texture_atlas.as_mut().unwrap().index = player_anim.frame % 2 + 11;
+            leg_sprite.texture_atlas.as_mut().unwrap().index = player_anim.frame % 2 + 11;
         },
         AnimState::Jump => {
-            head_atlas.index = 13;
-            leg_atlas.index = 14;
+            head_sprite.texture_atlas.as_mut().unwrap().index = 13;
+            leg_sprite.texture_atlas.as_mut().unwrap().index = 14;
         }
     }
 }

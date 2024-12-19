@@ -1,3 +1,5 @@
+use core::panic;
+
 use bevy::prelude::*;
 use rand::*;
 
@@ -143,7 +145,7 @@ impl ComplexRoom {
             (2, 2) => {
                 let root = IVec2::new(min_x, min_y); // bottom left
 
-                if !self.chunks.contains(&root) { //missing bottom left
+                if !self.chunks.contains(&root) { //missing bottom left (root)
                     ComplexRoomPermutation::LShapeQ3
                 } else if !self.chunks.contains(&IVec2::new(min_x + 1, min_y)) { // missing bottom right
                     ComplexRoomPermutation::LShapeQ4
@@ -155,6 +157,11 @@ impl ComplexRoom {
             }
             _ => panic!("Invalid room size, see get_permutation()"),
         }
+    }
+    pub fn get_bottom_left_coord(&self) -> IVec2 {
+        let min_x = self.chunks.iter().map(|chunk| chunk.x).min().unwrap();
+        let min_y = self.chunks.iter().map(|chunk| chunk.y).min().unwrap();
+        return IVec2::new(min_x, min_y);
     }
 }
 
@@ -185,4 +192,62 @@ pub enum ComplexRoomPermutation {
     LShapeQ2, // ▟
     LShapeQ3, // ▜
     LShapeQ4, // ▛
+}
+
+pub struct RoomPool {
+    pub pool: Vec<(ComplexRoomType, usize)>,
+}
+impl RoomPool {
+    pub fn new() -> Self {
+        Self {
+            pool: vec![],
+        }
+    }
+    pub fn push(&mut self, room: ComplexRoomType, count: usize) {
+        if room == ComplexRoomType::Spawn {
+            panic!("Cannot add spawn room to pool, spawn should be placed manually");
+        }
+        if room != ComplexRoomType::Enemy {
+            for _ in 0..count {
+                self.pool.push((room.clone(), 1));
+            }
+        } else {
+            let factor = (count - (count % 3)) / 3; //split up enemy rooms into three sizes adding the remainder to size 3
+            for _ in 0..factor {
+                self.pool.push((room.clone(), 1));
+            }
+            for _ in 0..factor {
+                self.pool.push((room.clone(), 2));
+            }
+            for _ in 0..factor + (count % 3) { 
+                self.pool.push((room.clone(), 3));
+            }
+        }
+    }
+    pub fn fetch_random (&mut self) -> (ComplexRoomType, usize) {
+        let mut rng = rand::thread_rng();
+        let index = rng.gen_range(0..self.pool.len());
+        return self.pool[index].clone();
+    }
+    pub fn get_amount(&self, room: ComplexRoomType) -> usize {
+        let mut count = 0;
+        for (t, s) in self.pool.iter() {
+            if t.clone() == room {
+                count += s;
+            }
+        }
+        return count;
+    }
+    pub fn pop(&mut self, pool_item: (ComplexRoomType, usize)) -> Option<usize> {
+        let index = self.pool.iter().position(|(t, s)| (t.clone(), s.clone()) == pool_item);
+        if let Some(index) = index {
+            let count = self.pool[index].1;
+            self.pool.remove(index);
+            return Some(count);
+        }
+        return None;
+    }
+    pub fn len(&self) -> usize {
+        return self.pool.len();
+    }
 }

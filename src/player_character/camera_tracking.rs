@@ -38,7 +38,7 @@ pub fn update_camera_tracking (
             }
 
             let difference: Vec2 = player_transform.translation.xy() - camera_transform.translation.xy();
-            camera_transform.translation = camera_transform.translation + (difference.extend(0.0) * 2.0 * time.delta_seconds());
+            camera_transform.translation = camera_transform.translation + (difference.extend(0.0) * 2.0 * time.delta_secs());
         }
     }
 }

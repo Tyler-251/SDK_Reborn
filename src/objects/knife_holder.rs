@@ -82,7 +82,7 @@ fn tick_knife_holders (
                     }
                 }
                 if let Ok(mut text) = text_query.get_mut(*child) {
-                    text.sections[0].value = format!("{}", knife_holder.index);
+                    text.0 = format!("{}", knife_holder.index);
                 }
             }
         }
@@ -92,7 +92,7 @@ fn tick_knife_holders (
         if knife_struct.ttl <= 0.0 {
             commands.entity(knife_entity).despawn_recursive();
         } else {
-            knife_struct.ttl -= time.delta_seconds();
+            knife_struct.ttl -= time.delta_secs();
         }
 
         //make unit direction vector
@@ -127,41 +127,32 @@ pub fn spawn_knife_holder (
     //knife base
     commands.spawn( (
         knife_holder.clone(),
-        SpriteBundle {
-            texture: loaded.get_typed::<Image>("knife_holder_base").unwrap(),
-            transform: Transform::from_translation(position.extend(0.)) * Transform::from_rotation(rotation),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(64.0,64.0)),
-                ..Default::default()
-            },
-            ..Default::default()
+        Sprite {
+            image: loaded.get_typed::<Image>("knife_holder_base").unwrap(),
+            custom_size: Some(Vec2::new(64.0,64.0)),
+            ..default()
         },
+        Transform::from_translation(position.extend(0.)) * Transform::from_rotation(rotation),
         Collider::cuboid(30.0, 32.0),
         Platform::SOLID,
     )).with_children(|parent| {
         //knife holder mask 0
         parent.spawn( ( 
-            SpriteBundle {
-                texture: loaded.get_typed::<Image>("knife_holder_mask_0").unwrap(),
-                transform: Transform::from_translation(Vec3::new(0.0,0.0,0.2)),
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(64.0, 64.0)),
-                    ..Default::default()
-                },
-                ..Default::default()
+            Sprite {
+                image: loaded.get_typed::<Image>("knife_holder_mask_0").unwrap(),
+                custom_size: Some(Vec2::new(64.0, 64.0)),
+                ..default()
             },
+            Transform::from_translation(Vec3::new(0.0,0.0,0.2))
         )); 
         //knife holder mask 1
         parent.spawn( ( 
-            SpriteBundle {
-                texture: loaded.get_typed::<Image>("knife_holder_mask_1").unwrap(),
-                transform: Transform::from_translation(Vec3::new(0.0,0.0,0.4)),
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(64.0, 64.0)),
-                    ..Default::default()
-                },
-                ..Default::default()
+            Sprite {
+                image: loaded.get_typed::<Image>("knife_holder_mask_1").unwrap(),
+                custom_size: Some(Vec2::new(64.0, 64.0)),
+                ..default()
             },
+            Transform::from_translation(Vec3::new(0.0,0.0,0.4)),
         ));
         //back knives
         spawn_ready_knife(parent, loaded.get_typed("small_knife").unwrap(), Vec3::new(-25.0, 10.0, 0.1), 0);
@@ -175,14 +166,9 @@ pub fn spawn_knife_holder (
         if knife_holder.debug {
             parent.spawn((
                 KnifeDebugText,
-                Text2dBundle {
-                    text: Text::from_section("test", TextStyle {
-                        color: Color::BLACK,
-                        ..default()
-                    }),
-                    transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.5)),
-                    ..Default::default()
-                }
+                Text2d("test".to_string()),
+                TextColor(Color::BLACK),
+                Transform::from_translation(Vec3::new(0.0, 0.0, 0.5)),
             ));
         }
     });
@@ -231,15 +217,12 @@ fn spawn_knife (
     }
     child_builder.spawn( (
         KnifeHolderKnife::new(index, 20.0, state, target_pos),
-        SpriteBundle {
-            texture: sprite,
-            transform: Transform::from_translation(starting_pos),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(50.0,10.0)),
-                ..Default::default()
-            },
-            ..Default::default()
+        Sprite {
+            image: sprite,
+            custom_size: Some(Vec2::new(50.0,10.0)),
+            ..default()
         },
+        Transform::from_translation(starting_pos),
         RigidBody::KinematicVelocityBased,
         Velocity::default(),
         Collider::cuboid(0., 0.), // must have collider to have velocity

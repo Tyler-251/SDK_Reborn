@@ -22,36 +22,26 @@ fn setup (
     mut commands: Commands,
 ) {
     commands.spawn((
-        TextBundle::from_section("Health: X/X", 
-            TextStyle {
-                color: Color::WHITE,
-                ..default()
-            }
-        ).with_style(
-            Style {
-                position_type: PositionType::Absolute,
-                left: Val::Px(20.0),
-                top: Val::Px(20.0),
-                ..Default::default()
-            }
-        ),
+        Text("Health: X/X".to_string()),
+        TextColor(Color::WHITE),
+        Node {
+            position_type: PositionType::Absolute,
+            left: Val::Px(20.0),
+            top: Val::Px(20.0),
+            ..default()
+        },
         HealthBar,
     ));
     commands.spawn((
-        TextBundle::from_section("Input Stack: X", 
-            TextStyle {
-                color: Color::WHITE,
-                ..default()
-            }
-        ).with_style(
-            Style {
-                position_type: PositionType::Absolute,
-                left: Val::Px(20.0),
-                top: Val::Px(40.0),
-                ..Default::default()
-            }
-        ),
-        InputStackText,
+        Text("Input Stack: X".to_string()),
+        TextColor(Color::WHITE),
+        Node {
+            position_type: PositionType::Absolute,
+            left: Val::Px(20.0),
+            top: Val::Px(40.0),
+            ..default()
+        },
+        InputStackText
     ));
 }
 
@@ -69,7 +59,7 @@ fn update_input_stack (
         }
     }   
     for mut text in query.iter_mut() {
-        text.sections[0].value = format!("Input Stack: {}", output);
+        text.0 = format!("Input Stack: {}", output);
     }
 }
 
@@ -79,7 +69,7 @@ fn update_health_bar (
 ) {
     for mut text in query.iter_mut() {
         let player = player_query.single();
-        text.sections[0].value = format!("Health: {}/{}", player.health.health, player.health.max_health);
+        text.0 = format!("Health: {}/{}", player.health.health, player.health.max_health);
     }
 }
 

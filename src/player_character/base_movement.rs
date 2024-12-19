@@ -40,21 +40,21 @@ fn control_squid (
             if velocity.linvel.x > movement {
                 velocity.linvel.x = movement;
             } else {
-                velocity.linvel.x = velocity.linvel.x * 0.05_f32.powf(time.delta_seconds()); // damping
+                velocity.linvel.x = velocity.linvel.x * 0.05_f32.powf(time.delta_secs()); // damping
             }
         }
         if movement > 0. {
             if velocity.linvel.x < movement {
                 velocity.linvel.x = movement;
             } else {
-                velocity.linvel.x = velocity.linvel.x * 0.05_f32.powf(time.delta_seconds()); // damping
+                velocity.linvel.x = velocity.linvel.x * 0.05_f32.powf(time.delta_secs()); // damping
             }
         }
         if dash_timer.timer.finished() {
             player_anim.set_state(AnimState::Walk);
         }
     } else {
-        velocity.linvel.x = velocity.linvel.x * 0.05_f32.powf(time.delta_seconds()); // damping
+        velocity.linvel.x = velocity.linvel.x * 0.05_f32.powf(time.delta_secs()); // damping
         if dash_timer.timer.finished() {
             player_anim.set_state(AnimState::Idle);
         }
