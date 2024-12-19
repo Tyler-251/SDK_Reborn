@@ -67,7 +67,7 @@ fn control_squid (
         spawn_splotch(&mut splotch_registry, 50, player_transform.translation.xy() + Vec2::new(0.0, -20.0));
     }
 
-    if input.pressed(KeyCode::Space) && velocity.linvel.y > 0.0 {
+    if input.pressed(KeyCode::Space) && velocity.linvel.y > 0.0 && (dash_timer.timer.finished() || dash_timer.direction != InputDirection::Up) {
         gravity.0 = 0.7;
     } else if input.pressed(KeyCode::KeyS) {
         gravity.0 = 2.5;
@@ -75,7 +75,7 @@ fn control_squid (
         gravity.0 = 1.3;
     } 
 
-    if player_transform.translation.y < -1000.0 {
+    if player_transform.translation.y < -1000.0 { //reset to origin for out of bounds
         player_transform.translation.y = 0.0;
         player_transform.translation.x = 0.0;
     }
@@ -103,6 +103,7 @@ fn manage_feet (
             CollisionEvent::Stopped(a, b, _) => {
                 if (feet_entity == Some(a) || feet_entity == Some(b)) && (platform_query.get_mut(*a).is_ok() || platform_query.get_mut(*b).is_ok()) {
                     player_struct.grounded = false;
+                    player_struct.has_jump = false;
                 }
             }
         }
