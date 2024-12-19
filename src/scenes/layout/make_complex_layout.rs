@@ -42,7 +42,7 @@ pub fn render_ghost_rooms (
         return;
     }
     for room in layout.rooms.iter() {
-        let mut rng = rand::thread_rng();
+        // let mut rng = rand::thread_rng();
         let room_color: Color;
         match room.room_type {
             ComplexRoomType::Enemy => {
@@ -64,70 +64,55 @@ pub fn render_ghost_rooms (
         for chunk in room.chunks.iter() {
             commands.spawn((
                 FauxDisplay,
-                SpriteBundle {
-                    sprite: Sprite {
-                        color: room_color,
-                        custom_size: Some(Vec2::new(90.0, 90.0)),
-                        ..default()
-                    },
-                    transform: Transform::from_translation(Vec3::new(chunk.x as f32 * 100.0, chunk.y as f32 * 100.0, 0.0)),
+                Sprite {
+                    color: room_color,
+                    custom_size: Some(Vec2::new(90.0, 90.0)),
                     ..default()
-                }
+                },
+                Transform::from_translation(Vec3::new(chunk.x as f32 * 100.0, chunk.y as f32 * 100.0, 0.0)),
             ));
             if room.chunks.contains(&IVec2::new(chunk.x + 1, chunk.y)) { //right
                 commands.spawn((
                     FauxDisplay,
-                    SpriteBundle {
-                        sprite: Sprite {
-                            color: room_color,
-                            custom_size: Some(Vec2::new(10.0, 90.0)),
-                            ..default()
-                        },
-                        transform: Transform::from_translation(Vec3::new(((chunk.x) as f32 * 100.0) + 50.0, chunk.y as f32 * 100.0, 0.0)),
+                    Sprite {
+                        color: room_color,
+                        custom_size: Some(Vec2::new(10.0, 90.0)),
                         ..default()
-                    }
+                    },
+                    Transform::from_translation(Vec3::new(((chunk.x) as f32 * 100.0) + 50.0, chunk.y as f32 * 100.0, 0.0)),
                 ));
             }
             if room.chunks.contains(&IVec2::new(chunk.x - 1, chunk.y)) { //left
                 commands.spawn((
                     FauxDisplay,
-                    SpriteBundle {
-                        sprite: Sprite {
-                            color: room_color,
-                            custom_size: Some(Vec2::new(10.0, 90.0)),
-                            ..default()
-                        },
-                        transform: Transform::from_translation(Vec3::new(((chunk.x) as f32 * 100.0) - 50.0, chunk.y as f32 * 100.0, 0.0)),
+                    Sprite {
+                        color: room_color,
+                        custom_size: Some(Vec2::new(10.0, 90.0)),
                         ..default()
-                    }
+                    },
+                    Transform::from_translation(Vec3::new(((chunk.x) as f32 * 100.0) - 50.0, chunk.y as f32 * 100.0, 0.0)),
                 ));
             }
             if room.chunks.contains(&IVec2::new(chunk.x, chunk.y + 1)) { //up
                 commands.spawn((
                     FauxDisplay,
-                    SpriteBundle {
-                        sprite: Sprite {
-                            color: room_color,
-                            custom_size: Some(Vec2::new(90.0, 10.0)),
-                            ..default()
-                        },
-                        transform: Transform::from_translation(Vec3::new(chunk.x as f32 * 100.0, ((chunk.y) as f32 * 100.0) + 50.0, 0.0)),
+                    Sprite {
+                        color: room_color,
+                        custom_size: Some(Vec2::new(90.0, 10.0)),
                         ..default()
-                    }
+                    },
+                    Transform::from_translation(Vec3::new(chunk.x as f32 * 100.0, ((chunk.y) as f32 * 100.0) + 50.0, 0.0)),
                 ));
             }
             if room.chunks.contains(&IVec2::new(chunk.x, chunk.y - 1)) { //down
                 commands.spawn((
                     FauxDisplay,
-                    SpriteBundle {
-                        sprite: Sprite {
-                            color: room_color,
-                            custom_size: Some(Vec2::new(90.0, 10.0)),
-                            ..default()
-                        },
-                        transform: Transform::from_translation(Vec3::new(chunk.x as f32 * 100.0, ((chunk.y) as f32 * 100.0) - 50.0, 0.0)),
+                    Sprite {
+                        color: room_color,
+                        custom_size: Some(Vec2::new(90.0, 10.0)),
                         ..default()
-                    }
+                    },
+                    Transform::from_translation(Vec3::new(chunk.x as f32 * 100.0, ((chunk.y) as f32 * 100.0) - 50.0, 0.0)),
                 ));
             }
         }
@@ -138,20 +123,17 @@ pub fn render_ghost_rooms (
             let direction = to - from;
             let angle = direction.y.atan2(direction.x);
             commands.spawn((
-                SpriteBundle {
-                    sprite: Sprite {
-                        custom_size: Some(Vec2::new(10.0, 10.0)),
-                        color: Color::srgb(1.0, 0.0, 0.0),
-                        ..default()
-                    },
-                    transform: Transform {
-                        translation: Vec3::new(midpoint.x as f32 * 100.0, midpoint.y as f32 * 100.0, 0.0),
-                        rotation: Quat::from_rotation_z(angle),
-                        ..default()
-                    },
+                FauxDisplay,
+                Sprite {
+                    custom_size: Some(Vec2::new(10.0, 10.0)),
+                    color: Color::srgb(1.0, 0.0, 0.0),
                     ..default()
                 },
-                FauxDisplay
+                Transform {
+                    translation: Vec3::new(midpoint.x as f32 * 100.0, midpoint.y as f32 * 100.0, 0.0),
+                    rotation: Quat::from_rotation_z(angle),
+                    ..default()
+                },
             ));
         }
     }
