@@ -32,7 +32,7 @@ fn spawn_background_layers (
     for i in -3..=3 {
         commands.spawn((
             Sprite {
-                image: loaded_assets.get_typed::<Image>("background").unwrap(),
+                image: loaded_assets.get_typed::<Image>("reef_far").unwrap(),
                 custom_size: Some(Vec2::new(1300.0, 400.0)),
                 ..default()
             },

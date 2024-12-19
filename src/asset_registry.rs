@@ -14,7 +14,7 @@ impl Plugin for LoadedAssetsPlugin {
         asset_plugin.add_asset::<Image>("small_knife", "knife/smallknife.png");
     
         asset_plugin.add_asset::<Image>("background", "waterscene/background/background.png");
-        asset_plugin.add_asset::<Image>("reef", "waterscene/background/reef.png");
+        asset_plugin.add_asset::<Image>("reef", "waterscene/background/preef.png");
         asset_plugin.add_asset::<Image>("watertop", "waterscene/background/watertop.png");
         asset_plugin.add_asset::<Image>("reef_far", "waterscene/background/far_coral.png");
         asset_plugin.add_asset::<Image>("light_beams", "waterscene/background/light_beams.png");
